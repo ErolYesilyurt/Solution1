@@ -1,0 +1,53 @@
+﻿@page "/hotels"
+@attribute [Authorize]
+@using Rezervasyon.Client.Models
+@inject HttpClient Http
+
+<PageTitle>Oteller</PageTitle>
+
+<h1>Otel Listesi</h1>
+
+<p>Bu sayfayı sadece giriş yapmış kullanıcılar görebilir.</p>
+
+@if (hotels == null)
+{
+    <p><em>Yükleniyor...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Otel Adı</th>
+                <th>Şehir</th>
+                <th>Yıldız</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var hotel in hotels)
+            {
+                <tr>
+                    <td>@hotel.Name</td>
+                    <td>@hotel.City</td>
+                    <td>@hotel.Stars</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Hotel[]? hotels;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            hotels = await Http.GetFromJsonAsync<Hotel[]>("api/hotels");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Otel verisi çekilirken hata oluştu: {ex.Message}");
+        }
+    }
+}

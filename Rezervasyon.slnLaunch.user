@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Yeni Profil",
+    "Projects": [
+      {
+        "Path": "Rezervasyon.api\\Rezervasyon.Api.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "Rezervasyon.Client\\Rezervasyon.Client.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

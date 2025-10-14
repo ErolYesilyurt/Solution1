@@ -1,12 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "ybXQJRE6JU8=",
+  "dgSpecHash": "ntkXHWk56AQ=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Erol\\source\\repos\\Solution1\\Rezervasyon.Client\\Rezervasyon.Client.csproj",
+  "projectFilePath": "C:\\Users\\Erol\\Source\\Repos\\Solution1\\Rezervasyon.Client\\Rezervasyon.Client.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Erol\\.nuget\\packages\\blazored.localstorage\\4.5.0\\blazored.localstorage.4.5.0.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.aspnetcore.authorization\\8.0.20\\microsoft.aspnetcore.authorization.8.0.20.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.aspnetcore.components\\8.0.20\\microsoft.aspnetcore.components.8.0.20.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.aspnetcore.components.analyzers\\8.0.20\\microsoft.aspnetcore.components.analyzers.8.0.20.nupkg.sha512",
+    "C:\\Users\\Erol\\.nuget\\packages\\microsoft.aspnetcore.components.authorization\\8.0.0\\microsoft.aspnetcore.components.authorization.8.0.0.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.aspnetcore.components.forms\\8.0.20\\microsoft.aspnetcore.components.forms.8.0.20.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.aspnetcore.components.web\\8.0.20\\microsoft.aspnetcore.components.web.8.0.20.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.aspnetcore.components.webassembly\\8.0.20\\microsoft.aspnetcore.components.webassembly.8.0.20.nupkg.sha512",

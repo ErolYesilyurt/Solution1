@@ -1,0 +1,23 @@
+﻿@using Rezervasyon.Client.Auth
+@inject NavigationManager Navigation
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject AuthenticationStateProvider AuthStateProvider
+
+<AuthorizeView>
+    <Authorized>
+        Merhaba, @context.User.Identity.Name!
+        <a href="#" @onclick="BeginLogout" style="cursor: pointer; margin-left: 10px; color: white; text-decoration: underline;">Çıkış Yap</a>
+    </Authorized>
+    <NotAuthorized>
+        <a href="login" style="color: white;">Giriş Yap</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private async Task BeginLogout()
+    {
+        await localStorage.RemoveItemAsync("authToken");
+        ((CustomAuthenticationStateProvider)AuthStateProvider).NotifyUserLogout();
+        Navigation.NavigateTo("/");
+    }
+}

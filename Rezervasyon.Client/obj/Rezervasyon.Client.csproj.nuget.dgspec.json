@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Erol\\source\\repos\\Solution1\\Rezervasyon.Client\\Rezervasyon.Client.csproj": {}
+    "C:\\Users\\Erol\\Source\\Repos\\Solution1\\Rezervasyon.Client\\Rezervasyon.Client.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Erol\\source\\repos\\Solution1\\Rezervasyon.Client\\Rezervasyon.Client.csproj": {
+    "C:\\Users\\Erol\\Source\\Repos\\Solution1\\Rezervasyon.Client\\Rezervasyon.Client.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Erol\\source\\repos\\Solution1\\Rezervasyon.Client\\Rezervasyon.Client.csproj",
+        "projectUniqueName": "C:\\Users\\Erol\\Source\\Repos\\Solution1\\Rezervasyon.Client\\Rezervasyon.Client.csproj",
         "projectName": "Rezervasyon.Client",
-        "projectPath": "C:\\Users\\Erol\\source\\repos\\Solution1\\Rezervasyon.Client\\Rezervasyon.Client.csproj",
+        "projectPath": "C:\\Users\\Erol\\Source\\Repos\\Solution1\\Rezervasyon.Client\\Rezervasyon.Client.csproj",
         "packagesPath": "C:\\Users\\Erol\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Erol\\source\\repos\\Solution1\\Rezervasyon.Client\\obj\\",
+        "outputPath": "C:\\Users\\Erol\\Source\\Repos\\Solution1\\Rezervasyon.Client\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -50,6 +50,14 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "Blazored.LocalStorage": {
+              "target": "Package",
+              "version": "[4.5.0, )"
+            },
+            "Microsoft.AspNetCore.Components.Authorization": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
             "Microsoft.AspNetCore.Components.WebAssembly": {
               "target": "Package",
               "version": "[8.0.20, )"
