@@ -1,0 +1,62 @@
+﻿@page "/add-hotel"
+@attribute [Authorize]
+@using Rezervasyon.Client.Models
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Yeni Otel Ekle</PageTitle>
+
+<h3>Yeni Otel Ekle</h3>
+
+<EditForm Model="hotel" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label for="name" class="form-label">Otel Adı</label>
+        <InputText id="name" class="form-control" @bind-Value="hotel.Name" />
+        <ValidationMessage For="@(() => hotel.Name)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="city" class="form-label">Şehir</label>
+        <InputText id="city" class="form-control" @bind-Value="hotel.City" />
+        <ValidationMessage For="@(() => hotel.City)" />
+    </div>
+
+    <div class="mb-3">
+        <label for="stars" class="form-label">Yıldız Sayısı</label>
+        <InputNumber id="stars" class="form-control" @bind-Value="hotel.Stars" />
+        <ValidationMessage For="@(() => hotel.Stars)" />
+    </div>
+
+    <button type="submit" class="btn btn-success">Oteli Kaydet</button>
+    <a href="/hotels" class="btn btn-secondary">İptal</a>
+</EditForm>
+
+@code {
+    private Hotel hotel = new Hotel();
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            // Hotel nesnesini JSON'a çevirip API'deki Post metoduna gönderiyoruz
+            var response = await Http.PostAsJsonAsync("api/hotels", hotel);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Başarılı olursa, otel listesi sayfasına geri yönlendir
+                Navigation.NavigateTo("/hotels");
+            }
+            else
+            {
+                // Hata yönetimi burada yapılabilir (örneğin kullanıcıya bir mesaj gösterme)
+                Console.WriteLine("Otel eklenirken bir hata oluştu.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"İstek gönderilirken hata: {ex.Message}");
+        }
+    }
+}

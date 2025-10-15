@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ntkXHWk56AQ=",
+  "dgSpecHash": "XskNygfMvDw=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Erol\\Source\\Repos\\Solution1\\Rezervasyon.Client\\Rezervasyon.Client.csproj",
+  "projectFilePath": "C:\\Users\\Erol\\source\\repos\\Solution1\\Rezervasyon.Client\\Rezervasyon.Client.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Erol\\.nuget\\packages\\blazored.localstorage\\4.5.0\\blazored.localstorage.4.5.0.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.aspnetcore.authorization\\8.0.20\\microsoft.aspnetcore.authorization.8.0.20.nupkg.sha512",

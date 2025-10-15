@@ -7,6 +7,8 @@
 
 <h1>Otel Listesi</h1>
 
+<a href="/add-hotel" class="btn btn-primary mb-3">Yeni Otel Ekle</a>
+
 <p>Bu sayfayı sadece giriş yapmış kullanıcılar görebilir.</p>
 
 @if (hotels == null)
@@ -30,6 +32,9 @@ else
                     <td>@hotel.Name</td>
                     <td>@hotel.City</td>
                     <td>@hotel.Stars</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteHotel(hotel.Id)">Sil</button>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -50,4 +55,26 @@ else
             Console.WriteLine($"Otel verisi çekilirken hata oluştu: {ex.Message}");
         }
     }
+
+    private async Task DeleteHotel(int id)
+    {
+        try
+        {
+            var response = await Http.DeleteAsync($"api/hotels/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                
+                hotels = hotels?.Where(h => h.Id != id).ToArray();
+            }
+            else
+            {
+                Console.WriteLine("Otel silinirken bir hata oluştu.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"İstek gönderilirken hata: {ex.Message}");
+        }
+	}
+    
 }

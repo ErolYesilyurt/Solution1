@@ -13,57 +13,61 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = browser
 build_property.RootNamespace = Rezervasyon.Client
 build_property.RootNamespace = Rezervasyon.Client
-build_property.ProjectDir = C:\Users\Erol\Source\Repos\Solution1\Rezervasyon.Client\
+build_property.ProjectDir = C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = false
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\Erol\Source\Repos\Solution1\Rezervasyon.Client
+build_property.MSBuildProjectDirectory = C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 8.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/Erol/Source/Repos/Solution1/Rezervasyon.Client/App.razor]
+[C:/Users/Erol/source/repos/Solution1/Rezervasyon.Client/App.razor]
 build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Erol/Source/Repos/Solution1/Rezervasyon.Client/Layout/EmptyLayout.razor]
+[C:/Users/Erol/source/repos/Solution1/Rezervasyon.Client/Layout/EmptyLayout.razor]
 build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XEVtcHR5TGF5b3V0LnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Erol/Source/Repos/Solution1/Rezervasyon.Client/Layout/LoginDisplay.razor]
+[C:/Users/Erol/source/repos/Solution1/Rezervasyon.Client/Layout/LoginDisplay.razor]
 build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XExvZ2luRGlzcGxheS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Erol/Source/Repos/Solution1/Rezervasyon.Client/Pages/Counter.razor]
+[C:/Users/Erol/source/repos/Solution1/Rezervasyon.Client/Pages/AddHotel.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRkSG90ZWwucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Erol/source/repos/Solution1/Rezervasyon.Client/Pages/Counter.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291bnRlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Erol/Source/Repos/Solution1/Rezervasyon.Client/Pages/Home.razor]
+[C:/Users/Erol/source/repos/Solution1/Rezervasyon.Client/Pages/Home.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSG9tZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Erol/Source/Repos/Solution1/Rezervasyon.Client/Pages/Hotels.razor]
+[C:/Users/Erol/source/repos/Solution1/Rezervasyon.Client/Pages/Hotels.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSG90ZWxzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Erol/Source/Repos/Solution1/Rezervasyon.Client/Pages/Login.razor]
+[C:/Users/Erol/source/repos/Solution1/Rezervasyon.Client/Pages/Login.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9naW4ucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Erol/Source/Repos/Solution1/Rezervasyon.Client/Pages/Weather.razor]
+[C:/Users/Erol/source/repos/Solution1/Rezervasyon.Client/Pages/Weather.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcV2VhdGhlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Erol/Source/Repos/Solution1/Rezervasyon.Client/_Imports.razor]
+[C:/Users/Erol/source/repos/Solution1/Rezervasyon.Client/_Imports.razor]
 build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Erol/Source/Repos/Solution1/Rezervasyon.Client/Layout/MainLayout.razor]
+[C:/Users/Erol/source/repos/Solution1/Rezervasyon.Client/Layout/MainLayout.razor]
 build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE1haW5MYXlvdXQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = b-4nnmb4g9vd
 
-[C:/Users/Erol/Source/Repos/Solution1/Rezervasyon.Client/Layout/NavMenu.razor]
+[C:/Users/Erol/source/repos/Solution1/Rezervasyon.Client/Layout/NavMenu.razor]
 build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE5hdk1lbnUucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = b-2onem4ierk
