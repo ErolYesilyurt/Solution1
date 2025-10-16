@@ -18,6 +18,7 @@
     {
         await localStorage.RemoveItemAsync("authToken");
         ((CustomAuthenticationStateProvider)AuthStateProvider).NotifyUserLogout();
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("/", forceLoad: true);
+   
     }
 }

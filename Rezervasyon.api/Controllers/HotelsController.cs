@@ -36,6 +36,7 @@ namespace Rezervasyon.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles="Admin")]
         public async Task<IActionResult> AddHotel([FromBody] Hotel hotel)
         {
             if (hotel ==null)
@@ -47,6 +48,7 @@ namespace Rezervasyon.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles="Admin")]
 
         public async Task<IActionResult> DeleteHotel(int id)
         {
@@ -59,5 +61,47 @@ namespace Rezervasyon.Api.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetHotel(int id)
+        {
+            var hotel = await _context.Oteller.FirstOrDefaultAsync(a => a.Id == id);
+            if (hotel == null)
+            {
+                return NotFound();
+            }
+            return Ok(hotel);
+        }
+
+        [HttpPut("{id}")]
+        [Authorize(Roles="Admin")]
+        public async Task<IActionResult> UpdateHotel(int id, [FromBody] Hotel updatedHotel)
+        {
+           if(id != updatedHotel.Id)
+            {
+                return BadRequest();
+            }
+            
+           _context.Entry(updatedHotel).State = EntityState.Modified;
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch(DbUpdateConcurrencyException)
+            {  if(!_context.Oteller.Any(e => e.Id == id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+       
+            return NoContent();
+
+        }
+
     }
 }
