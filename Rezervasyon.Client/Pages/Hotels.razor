@@ -6,8 +6,9 @@
 <PageTitle>Oteller</PageTitle>
 
 <h1>Otel Listesi</h1>
-
+<AuthorizeView Roles="Admin">
 <button class="btn btn-primary mb-3" @onclick="OpenAddModal">Yeni Otel Ekle</button>
+</AuthorizeView>
 
 @if (hotels == null)
 {
@@ -21,7 +22,9 @@ else
                 <th>Otel Adı</th>
                 <th>Şehir</th>
                 <th>Yıldız</th>
+                <AuthorizeView roles="Admin">
                 <th>İşlemler</th>
+                </AuthorizeView>
             </tr>
         </thead>
         <tbody>
@@ -31,10 +34,12 @@ else
                     <td>@hotel.Name</td>
                     <td>@hotel.City</td>
                     <td>@hotel.Stars</td>
+                    <AuthorizeView Roles="Admin">
                     <td>
                         <button class="btn btn-warning btn-sm" @onclick="() => OpenEditModal(hotel)">Düzenle</button>
                         <button class="btn btn-danger btn-sm" @onclick="() => DeleteHotel(hotel.Id)">Sil</button>
                     </td>
+                    </AuthorizeView>
                 </tr>
             }
         </tbody>

@@ -61,25 +61,38 @@ namespace Rezervasyon.Client.Auth
             var jsonBytes = ParseBase64WithoutPadding(payload);
             var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
 
-            if (keyValuePairs != null)
+           
+            if (keyValuePairs.TryGetValue("sub", out object usernameValue))
             {
-                keyValuePairs.TryGetValue(ClaimTypes.Role, out object roles);
-                if (roles != null)
-                {
-                    if (roles.ToString().Trim().StartsWith("["))
-                    {
-                        var parsedRoles = JsonSerializer.Deserialize<string[]>(roles.ToString());
-                        foreach (var parsedRole in parsedRoles) { claims.Add(new Claim(ClaimTypes.Role, parsedRole)); }
-                    }
-                    else { claims.Add(new Claim(ClaimTypes.Role, roles.ToString())); }
-                }
+                claims.Add(new Claim(ClaimTypes.Name, usernameValue.ToString()));
+            }
 
-                keyValuePairs.TryGetValue("sub", out object username);
-                if (username != null)
+       
+            if (keyValuePairs.TryGetValue("role", out object rolesValue))
+            {
+                if (rolesValue != null)
                 {
-                    claims.Add(new Claim(ClaimTypes.Name, username.ToString()));
+                    var rolesString = rolesValue.ToString();
+                    if (rolesString.Trim().StartsWith("["))
+                    {
+                        var parsedRoles = JsonSerializer.Deserialize<string[]>(rolesString);
+                        foreach (var parsedRole in parsedRoles)
+                        {
+                            claims.Add(new Claim(ClaimTypes.Role, parsedRole));
+                        }
+                    }
+                    else
+                    {
+                        claims.Add(new Claim(ClaimTypes.Role, rolesString));
+                    }
                 }
             }
+
+         
+            claims.AddRange(keyValuePairs
+                .Where(kvp => kvp.Key != "sub" && kvp.Key != "role")
+                .Select(kvp => new Claim(kvp.Key, kvp.Value.ToString())));
+
             return claims;
         }
 

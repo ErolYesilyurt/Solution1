@@ -1044,6 +1044,6 @@ C:\Users\Erol\Source\Repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\Rezerva
 C:\Users\Erol\Source\Repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\refint\Rezervasyon.Client.dll
 C:\Users\Erol\Source\Repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\Rezervasyon.Client.pdb
 C:\Users\Erol\Source\Repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\ref\Rezervasyon.Client.dll
-C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\compressed\x8kp95ds77-6w4c2y3v9b.gz
-C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\compressed\5fj5gwsq2g-ll9aqwhtwe.gz
-C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\compressed\40qh1yiqfd-nlyyvzbk9f.gz
+C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\compressed\x8kp95ds77-lmwtz1bxi5.gz
+C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\compressed\5fj5gwsq2g-zqlludz5o1.gz
+C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\compressed\40qh1yiqfd-4wtyes5and.gz

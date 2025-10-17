@@ -1,0 +1,142 @@
+﻿@page "/currencies"
+@attribute [Authorize]
+@using Rezervasyon.Client.Models
+@inject HttpClient Http
+
+<PageTitle>Oteller</PageTitle>
+
+<h1>Currency Listesi</h1>
+<AuthorizeView Roles="User">
+    <button class="btn btn-primary mb-3" @onclick="OpenAddModal">Yeni Currency Ekle</button>
+</AuthorizeView>
+
+@if (currencies == null)
+{
+    <p><em>Yükleniyor...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Currency Adı</th>
+                <th>Kodu</th>
+                <AuthorizeView roles="User">
+                    <th>İşlemler</th>
+                </AuthorizeView>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var currency in currencies)
+            {
+                <tr>
+                    <td>@currency.Name</td>
+                    <td>@currency.Code</td>
+                    <AuthorizeView Roles="User">
+                        <td>
+                            <button class="btn btn-warning btn-sm" @onclick="() => OpenEditModal(currency)">Düzenle</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => DeleteCurrency(currency.Id)">Sil</button>
+                        </td>
+                    </AuthorizeView>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (isModalVisible)
+{
+    <div class="modal fade show" tabindex="-1" style="display: block;" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(isEditMode ? "Oteli Düzenle" : "Yeni Otel Ekle")</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (currentCurrency != null)
+                    {
+                        <EditForm Model="currentCurrency" OnValidSubmit="HandleSave">
+                            <DataAnnotationsValidator />
+
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Currency Adı</label>
+                                <InputText id="name" class="form-control" @bind-Value="currentCurrency.Name" />
+                                <ValidationMessage For="@(() => currentCurrency.Name)" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="city" class="form-label">Kodu</label>
+                                <InputText id="city" class="form-control" @bind-Value="currentCurrency.Code" />
+                                <ValidationMessage For="@(() => currentCurrency.Code)" />
+                            </div>
+                         
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" @onclick="CloseModal">İptal</button>
+                                @if (isEditMode)
+                                {
+                                    <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-success">Currency Kaydet</button>
+                                }
+                            </div>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+
+@code {
+    private List<Currency>? currencies;
+
+
+    private bool isModalVisible = false;
+    private bool isEditMode = false;
+    private Currency currentCurrency = new Currency();
+
+    protected override async Task OnInitializedAsync() => await LoadCurrencies();
+    private async Task LoadCurrencies() => currencies = (await Http.GetFromJsonAsync<Currency[]>("api/currencies"))?.ToList();
+
+    private void OpenAddModal()
+    {
+        isEditMode = false;
+        currentCurrency = new Currency();
+        isModalVisible = true;
+    }
+
+    private void OpenEditModal(Currency currency)
+    {
+        isEditMode = true;
+        currentCurrency = new Currency { Id = currency.Id, Name = currency.Name, Code=currency.Code };
+        isModalVisible = true;
+    }
+
+    private void CloseModal() => isModalVisible = false;
+
+    private async Task HandleSave()
+    {
+        if (isEditMode)
+        {
+            await Http.PutAsJsonAsync($"api/currencies/{currentCurrency.Id}", currentCurrency);
+        }
+        else
+        {
+            await Http.PostAsJsonAsync("api/currencies", currentCurrency);
+        }
+
+        CloseModal();
+        await LoadCurrencies();
+    }
+
+    private async Task DeleteCurrency(int hotelId)
+    {
+        await Http.DeleteAsync($"api/currencies/{hotelId}");
+        await LoadCurrencies();
+    }
+}

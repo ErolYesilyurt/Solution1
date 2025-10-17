@@ -12,10 +12,15 @@ namespace Rezervasyon.Api.Data
         }
         public DbSet<Hotel> Oteller { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Currency> Currencies { get; set; }
+        public DbSet<Price> Prices { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+
+           
         }
     }
 }

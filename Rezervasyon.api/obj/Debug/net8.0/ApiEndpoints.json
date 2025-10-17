@@ -32,6 +32,85 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "Rezervasyon.Api.Controllers.CurrenciesController",
+    "Method": "GetCurrencies",
+    "RelativePath": "api/Currencies",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Rezervasyon.Api.Controllers.CurrenciesController",
+    "Method": "AddCurrency",
+    "RelativePath": "api/Currencies",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "currency",
+        "Type": "Rezervasyon.Api.Models.Currency",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Rezervasyon.Api.Controllers.CurrenciesController",
+    "Method": "DeleteCurrency",
+    "RelativePath": "api/Currencies/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Rezervasyon.Api.Controllers.CurrenciesController",
+    "Method": "GetCurrency",
+    "RelativePath": "api/Currencies/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Rezervasyon.Api.Controllers.CurrenciesController",
+    "Method": "UpdateCurrency",
+    "RelativePath": "api/Currencies/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "currency",
+        "Type": "Rezervasyon.Api.Models.Currency",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "Rezervasyon.Api.Controllers.HotelsController",
     "Method": "GetHotels",
     "RelativePath": "api/Hotels",
@@ -105,6 +184,69 @@
       {
         "Name": "updatedHotel",
         "Type": "Rezervasyon.Api.Models.Hotel",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Rezervasyon.Api.Controllers.PricesController",
+    "Method": "GetPrices",
+    "RelativePath": "api/Prices",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Rezervasyon.Api.Controllers.PricesController",
+    "Method": "AddPrices",
+    "RelativePath": "api/Prices",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "price",
+        "Type": "Rezervasyon.Api.Models.Price",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Rezervasyon.Api.Controllers.PricesController",
+    "Method": "DeletePrice",
+    "RelativePath": "api/Prices/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Rezervasyon.Api.Controllers.PricesController",
+    "Method": "UpdatePrice",
+    "RelativePath": "api/Prices/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "price",
+        "Type": "Rezervasyon.Api.Models.Price",
         "IsRequired": true
       }
     ],
