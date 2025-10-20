@@ -1,0 +1,272 @@
+﻿@page "/reservations"
+@attribute [Authorize(Roles = "Admin")]
+@using Rezervasyon.Client.Models
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Rezervasyon Yönetimi</PageTitle>
+
+<h3>Rezervasyon Yönetimi</h3>
+
+<button class="btn btn-primary mb-3" @onclick="OpenAddModal">Yeni Rezervasyon Ekle</button>
+
+@if (reservations == null)
+{
+    <p><em>Rezervasyonlar yükleniyor...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Otel</th>
+                <th>Kullanıcı</th>
+                <th>Giriş Tarihi</th>
+                <th>Çıkış Tarihi</th>
+                <th>Toplam Fiyat</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var reservation in reservations)
+            {
+                <tr>
+                    <td>@reservation.Hotel?.Name ?? "Bilinmiyor"</td>
+                    <td>@reservation.User?.Username ?? "Bilinmiyor"</td>
+                    <td>@reservation.GirisTarihi.ToShortDateString()</td>
+                    <td>@reservation.CikisTarihi.ToShortDateString()</td>
+                    <td>@reservation.ToplamFiyat.ToString("N2")</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" @onclick="() => OpenEditModal(reservation)">Düzenle</button>
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteReservation(reservation.Id)">Sil</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (isModalVisible)
+{
+    <div class="modal fade show" tabindex="-1" style="display: block;" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(isEditMode ? "Rezervasyonu Düzenle" : "Yeni Rezervasyon Ekle")</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (currentReservation != null)
+                    {
+                        <EditForm Model="currentReservation" OnValidSubmit="HandleSave">
+                            <DataAnnotationsValidator />
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Otel</label>
+                                    <InputSelect class="form-select" @bind-Value="currentReservation.HotelId" @bind-Value:after="CalculatePriceAsync">
+                                        <option value="0">-- Otel Seçin --</option>
+                                        @if (allHotels != null)
+                                        {
+                                            @foreach(var hotel in allHotels) {
+                                                <option value="@hotel.Id">@hotel.Name</option>
+                                            }
+         }
+                                    </InputSelect>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Kullanıcı</label>
+                                    <InputSelect class="form-select" @bind-Value="currentReservation.UserId">
+                                        <option value="0">-- Kullanıcı Seçin --</option>
+                                        @if (allUsers != null)
+                                        {
+                                            @foreach(var user in allUsers) {
+                                                <option value="@user.Id">@user.Username</option>
+                                            }
+         }
+                                    </InputSelect>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Giriş Tarihi</label>
+                                    <InputDate class="form-control" @bind-Value="currentReservation.GirisTarihi" @bind-Value:after="CalculatePriceAsync" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Çıkış Tarihi</label>
+                                    <InputDate class="form-control" @bind-Value="currentReservation.CikisTarihi" @bind-Value:after="CalculatePriceAsync" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Yetişkin Sayısı</label>
+                                    <InputNumber class="form-control" @bind-Value="currentReservation.YetiskinSayisi" @bind-Value:after="CalculatePriceAsync" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Çocuk Sayısı</label>
+                                    <InputNumber class="form-control" @bind-Value="currentReservation.CocukSayisi" @bind-Value:after="CalculatePriceAsync" />
+                                </div>
+
+                                <div class="col-12 mb-3">
+                                    <label class="form-label">Hesaplanan Fiyat</label>
+                                    @if (isCalculatingPrice)
+                                    {
+                                        <p><em>Fiyat hesaplanıyor...</em></p>
+                                    }
+                                    else if (!string.IsNullOrEmpty(priceCalculationError))
+                                    {
+                                        <div class="alert alert-danger py-1">@priceCalculationError</div>
+                                    }
+                                    else if (calculatedPriceInfo != null)
+                                    {
+                                        <p class="fw-bold fs-5">
+                                            @calculatedPriceInfo.ToplamTutar.ToString("N2") @calculatedPriceInfo.ParaBirimiKodu
+                                            <small class="text-muted fw-normal">(@calculatedPriceInfo.GeceSayisi gece x @calculatedPriceInfo.GecelikFiyat.ToString("N2") @calculatedPriceInfo.ParaBirimiKodu)</small>
+                                        </p>
+                                    }
+                                    else
+                                    {
+                                        <p><em>Fiyatı hesaplamak için Otel ve Tarihleri seçin.</em></p>
+                                    }
+                                    <InputNumber @bind-Value="currentReservation.ToplamFiyat" hidden />
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label class="form-label">Açıklama</label>
+                                    <InputTextArea class="form-control" @bind-Value="currentReservation.Aciklama" />
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" @onclick="CloseModal">İptal</button>
+                                <button type="submit" class="btn btn-primary" disabled="@isCalculatingPrice">Kaydet</button>
+                            </div>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    private List<Reservation>? reservations;
+    private List<Hotel>? allHotels;
+    private List<User>? allUsers;
+
+    private bool isModalVisible = false;
+    private bool isEditMode = false;
+    private Reservation currentReservation = new();
+
+  
+    private PriceCalculationResult? calculatedPriceInfo;
+    private bool isCalculatingPrice = false;
+    private string? priceCalculationError;
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInitialData();
+    }
+
+    private async Task LoadInitialData()
+    {
+        reservations = await Http.GetFromJsonAsync<List<Reservation>>("api/reservations");
+        allHotels = await Http.GetFromJsonAsync<List<Hotel>>("api/hotels");
+        allUsers = await Http.GetFromJsonAsync<List<User>>("api/users");
+    }
+
+    private async Task ReloadReservations()
+    {
+        reservations = await Http.GetFromJsonAsync<List<Reservation>>("api/reservations");
+    }
+
+    private void OpenAddModal()
+    {
+        isEditMode = false;
+        currentReservation = new Reservation { GirisTarihi = DateTime.Today, CikisTarihi = DateTime.Today.AddDays(1) };
+        calculatedPriceInfo = null; 
+        priceCalculationError = null;
+        isModalVisible = true;
+        
+        _ = CalculatePriceAsync();
+    }
+
+    private void OpenEditModal(Reservation reservation)
+    {
+        isEditMode = true;
+        currentReservation = new Reservation {};
+        calculatedPriceInfo = null; 
+        priceCalculationError = null;
+        isModalVisible = true;
+       
+        _ = CalculatePriceAsync();
+    }
+
+    private void CloseModal() => isModalVisible = false;
+
+
+    private async Task CalculatePriceAsync()
+    {
+      
+        if (currentReservation.HotelId <= 0 || currentReservation.GirisTarihi == default || currentReservation.CikisTarihi == default || currentReservation.GirisTarihi >= currentReservation.CikisTarihi)
+        {
+            calculatedPriceInfo = null;
+            priceCalculationError = "Lütfen geçerli bir otel ve tarih aralığı seçin.";
+            currentReservation.ToplamFiyat = 0; 
+            StateHasChanged();
+            return;
+        }
+
+        isCalculatingPrice = true;
+        priceCalculationError = null;
+        calculatedPriceInfo = null;
+        StateHasChanged(); 
+
+        try
+        {
+            
+            string requestUri = $"api/prices/calculate?hotelId={currentReservation.HotelId}&giris={currentReservation.GirisTarihi:yyyy-MM-dd}&cikis={currentReservation.CikisTarihi:yyyy-MM-dd}&yetiskinsayisi={currentReservation.YetiskinSayisi}&cocuksayisi={currentReservation.CocukSayisi}";
+            var response = await Http.GetAsync(requestUri);
+
+            if (response.IsSuccessStatusCode)
+            {
+                calculatedPriceInfo = await response.Content.ReadFromJsonAsync<PriceCalculationResult>();
+                if (calculatedPriceInfo != null)
+                {
+                   
+                    currentReservation.ToplamFiyat = calculatedPriceInfo.ToplamTutar;
+                }
+            }
+            else
+            {
+                
+                priceCalculationError = $"Fiyat hesaplanamadı: {await response.Content.ReadAsStringAsync()}";
+                currentReservation.ToplamFiyat = 0; 
+            }
+        }
+        catch (Exception ex)
+        {
+            priceCalculationError = $"Hesaplama sırasında hata: {ex.Message}";
+            currentReservation.ToplamFiyat = 0; 
+        }
+        finally
+        {
+            isCalculatingPrice = false;
+            StateHasChanged(); 
+        }
+    }
+
+
+    private async Task HandleSave()
+    {
+        
+        await CalculatePriceAsync();
+        if (priceCalculationError != null || currentReservation.ToplamFiyat <= 0)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Lütfen geçerli bir fiyat hesaplaması yapın.");
+            return; 
+        }
+
+        if (isEditMode) {  }
+        else { }
+        CloseModal();
+        await ReloadReservations();
+    }
+
+    private async Task DeleteReservation(int id) { }
+}

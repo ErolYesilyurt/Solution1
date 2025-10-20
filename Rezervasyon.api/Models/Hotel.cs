@@ -7,5 +7,6 @@ namespace Rezervasyon.Api.Models
         public string Name { get; set; }
         public string City { get; set; }
         public int Stars { get; set; }
+
     }
 }

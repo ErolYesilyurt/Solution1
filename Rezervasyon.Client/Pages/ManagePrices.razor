@@ -1,0 +1,137 @@
+﻿@page "/manage-prices"
+@attribute [Authorize(Roles = "Admin")]
+@using Rezervasyon.Client.Models
+@inject HttpClient Http
+
+<PageTitle>Fiyat Yönetimi</PageTitle>
+
+<h3>Fiyat Yönetimi</h3>
+
+<div class="mb-3">
+    <label for="hotel-select" class="form-label">Fiyatlarını Yönetmek İstediğiniz Oteli Seçin:</label>
+    <InputSelect id="hotel-select" class="form-select" @bind-Value="selectedHotelId" @bind-Value:after="LoadPricesForSelectedHotel">
+        <option value="0" disabled>-- Bir otel seçin --</option>
+        @if (allHotels != null)
+        {
+            @foreach (var hotel in allHotels)
+            {
+                <option value="@hotel.Id">@hotel.Name</option>
+            }
+        }
+    </InputSelect>
+</div>
+
+@if (selectedHotelId > 0)
+{
+    <div class="card mb-4">
+        <div class="card-header">Yeni Fiyat Ekle</div>
+        <div class="card-body">
+            <EditForm Model="newPrice" OnValidSubmit="HandleAddPrice">
+                <DataAnnotationsValidator />
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label>Tutar</label>
+                        <InputNumber class="form-control" @bind-Value="newPrice.Amount" />
+                    </div>
+                    <div class="col-md-3">
+                        <label>Para Birimi</label>
+                        <InputSelect class="form-select" @bind-Value="newPrice.CurrencyId">
+                            <option value="0" disabled>-- Seçin --</option>
+                            @if (allCurrencies != null)
+                            {
+                                @foreach (var currency in allCurrencies)
+                                {
+                                    <option value="@currency.Id">@currency.Code</option>
+                                }
+                            }
+                        </InputSelect>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Geçerlilik Başlangıcı</label>
+                        <InputDate class="form-control" @bind-Value="newPrice.GecerlilikBaslangic" />
+                    </div>
+                    <div class="col-md-3">
+                        <label>Geçerlilik Bitişi</label>
+                        <InputDate class="form-control" @bind-Value="newPrice.GecerlilikBitis" />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success mt-3">Fiyatı Ekle</button>
+            </EditForm>
+        </div>
+    </div>
+
+    <h4>Mevcut Fiyat Tanımları</h4>
+    @if (pricesForSelectedHotel == null)
+    {
+        <p><em>Fiyatlar yükleniyor...</em></p>
+    }
+    else if (!pricesForSelectedHotel.Any())
+    {
+        <p>Bu otel için henüz bir fiyat tanımı eklenmemiş.</p>
+    }
+    else
+    {
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Tutar</th>
+                    <th>Başlangıç</th>
+                    <th>Bitiş</th>
+                    <AuthorizeView roles="Admin">
+                        <th>İşlemler</th>
+                    </AuthorizeView>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var price in pricesForSelectedHotel)
+                {
+                    <tr>
+                        <td>@price.Amount.ToString("N2") @price.Currency.Code</td>
+                        <td>@price.GecerlilikBaslangic.ToShortDateString()</td>
+                        <td>@price.GecerlilikBitis.ToShortDateString()</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    private List<Hotel>? allHotels;
+    private List<Currency>? allCurrencies;
+    private List<Price>? pricesForSelectedHotel;
+
+    private int selectedHotelId;
+    private Price newPrice = new() { GecerlilikBaslangic = DateTime.Today, GecerlilikBitis = DateTime.Today.AddMonths(1) };
+
+    protected override async Task OnInitializedAsync()
+    {
+       
+        allHotels = (await Http.GetFromJsonAsync<Hotel[]>("api/hotels"))?.ToList();
+        allCurrencies = (await Http.GetFromJsonAsync<Currency[]>("api/currencies"))?.ToList();
+    }
+
+    private async Task LoadPricesForSelectedHotel()
+    {
+        if (selectedHotelId > 0)
+        {
+            pricesForSelectedHotel = null; 
+            StateHasChanged();
+            pricesForSelectedHotel = await Http.GetFromJsonAsync<List<Price>>($"api/prices/forHotel/{selectedHotelId}");
+        }
+    }
+
+    private async Task HandleAddPrice()
+    {
+        if (selectedHotelId > 0 && newPrice.CurrencyId > 0)
+        {
+            newPrice.HotelId = selectedHotelId;
+            var response = await Http.PostAsJsonAsync("api/prices", newPrice);
+            if (response.IsSuccessStatusCode)
+            {
+                newPrice = new() { GecerlilikBaslangic = DateTime.Today, GecerlilikBitis = DateTime.Today.AddMonths(1) };
+                await LoadPricesForSelectedHotel(); 
+            }
+        }
+    }
+}

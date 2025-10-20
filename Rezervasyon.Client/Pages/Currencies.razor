@@ -6,7 +6,7 @@
 <PageTitle>Oteller</PageTitle>
 
 <h1>Currency Listesi</h1>
-<AuthorizeView Roles="User">
+<AuthorizeView Roles="Admin">
     <button class="btn btn-primary mb-3" @onclick="OpenAddModal">Yeni Currency Ekle</button>
 </AuthorizeView>
 
@@ -21,7 +21,7 @@ else
             <tr>
                 <th>Currency Adı</th>
                 <th>Kodu</th>
-                <AuthorizeView roles="User">
+                <AuthorizeView roles="Admin">
                     <th>İşlemler</th>
                 </AuthorizeView>
             </tr>
@@ -32,7 +32,7 @@ else
                 <tr>
                     <td>@currency.Name</td>
                     <td>@currency.Code</td>
-                    <AuthorizeView Roles="User">
+                    <AuthorizeView Roles="Admin">
                         <td>
                             <button class="btn btn-warning btn-sm" @onclick="() => OpenEditModal(currency)">Düzenle</button>
                             <button class="btn btn-danger btn-sm" @onclick="() => DeleteCurrency(currency.Id)">Sil</button>

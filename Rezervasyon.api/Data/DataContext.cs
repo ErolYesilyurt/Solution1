@@ -14,6 +14,7 @@ namespace Rezervasyon.Api.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Currency> Currencies { get; set; }
         public DbSet<Price> Prices { get; set; }
+        public DbSet<Reservation> Reservations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

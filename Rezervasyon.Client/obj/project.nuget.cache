@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "XskNygfMvDw=",
+  "dgSpecHash": "P8kh7Wp3sk8=",
   "success": true,
   "projectFilePath": "C:\\Users\\Erol\\source\\repos\\Solution1\\Rezervasyon.Client\\Rezervasyon.Client.csproj",
   "expectedPackageFiles": [
@@ -13,7 +13,11 @@
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.aspnetcore.components.web\\8.0.20\\microsoft.aspnetcore.components.web.8.0.20.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.aspnetcore.components.webassembly\\8.0.20\\microsoft.aspnetcore.components.webassembly.8.0.20.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.aspnetcore.components.webassembly.devserver\\8.0.20\\microsoft.aspnetcore.components.webassembly.devserver.8.0.20.nupkg.sha512",
+    "C:\\Users\\Erol\\.nuget\\packages\\microsoft.aspnetcore.http.abstractions\\2.3.0\\microsoft.aspnetcore.http.abstractions.2.3.0.nupkg.sha512",
+    "C:\\Users\\Erol\\.nuget\\packages\\microsoft.aspnetcore.http.features\\2.3.0\\microsoft.aspnetcore.http.features.2.3.0.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.aspnetcore.metadata\\8.0.20\\microsoft.aspnetcore.metadata.8.0.20.nupkg.sha512",
+    "C:\\Users\\Erol\\.nuget\\packages\\microsoft.aspnetcore.mvc.abstractions\\2.3.0\\microsoft.aspnetcore.mvc.abstractions.2.3.0.nupkg.sha512",
+    "C:\\Users\\Erol\\.nuget\\packages\\microsoft.aspnetcore.routing.abstractions\\2.3.0\\microsoft.aspnetcore.routing.abstractions.2.3.0.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.extensions.configuration\\8.0.0\\microsoft.extensions.configuration.8.0.0.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\8.0.0\\microsoft.extensions.configuration.abstractions.8.0.0.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.extensions.configuration.binder\\8.0.2\\microsoft.extensions.configuration.binder.8.0.2.nupkg.sha512",
@@ -30,9 +34,12 @@
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.jsinterop\\8.0.20\\microsoft.jsinterop.8.0.20.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.jsinterop.webassembly\\8.0.20\\microsoft.jsinterop.webassembly.8.0.20.nupkg.sha512",
+    "C:\\Users\\Erol\\.nuget\\packages\\microsoft.net.http.headers\\2.3.0\\microsoft.net.http.headers.2.3.0.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.net.illink.tasks\\8.0.20\\microsoft.net.illink.tasks.8.0.20.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.net.sdk.webassembly.pack\\9.0.9\\microsoft.net.sdk.webassembly.pack.9.0.9.nupkg.sha512",
+    "C:\\Users\\Erol\\.nuget\\packages\\system.buffers\\4.6.0\\system.buffers.4.6.0.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\system.io.pipelines\\8.0.0\\system.io.pipelines.8.0.0.nupkg.sha512",
+    "C:\\Users\\Erol\\.nuget\\packages\\system.text.encodings.web\\8.0.0\\system.text.encodings.web.8.0.0.nupkg.sha512",
     "C:\\Users\\Erol\\.nuget\\packages\\microsoft.netcore.app.runtime.mono.browser-wasm\\8.0.20\\microsoft.netcore.app.runtime.mono.browser-wasm.8.0.20.nupkg.sha512"
   ],
   "logs": []

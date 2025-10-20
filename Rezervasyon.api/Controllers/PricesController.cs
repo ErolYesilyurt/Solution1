@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Rezervasyon.Api.Data;
@@ -9,73 +8,99 @@ namespace Rezervasyon.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize] 
     public class PricesController : ControllerBase
     {
         private readonly DataContext _context;
-        public PricesController(DataContext context)
-        {  _context = context; }
-        [HttpGet]
-         public IActionResult GetPrices()
-        {
-            var prices= _context.Prices.ToList();
-            return Ok(prices);
 
+        public PricesController(DataContext context)
+        {
+            _context = context;
         }
 
+        
         [HttpPost]
-        public async Task<IActionResult> AddPrices([FromBody] Price price)
-        {
-            if (price == null)
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<Price>> PostPrice([FromBody]Price price)
+        {   if (price == null)
                 return BadRequest();
             _context.Prices.Add(price);
             await _context.SaveChangesAsync();
-            return Ok();
+            return CreatedAtAction("GetPriceById", new { id = price.Id }, price); 
         }
 
-        [HttpDelete("{id}")]
-
-        public async Task<IActionResult> DeletePrice(int id)
+        
+        [HttpGet("forHotel/{hotelId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<IEnumerable<Price>>> GetPricesForHotel(int hotelId)
         {
-            var price= _context.Prices.FirstOrDefault(x => x.Id == id);
-            if (price == null)
-                return NotFound();
-            _context.Prices.Remove(price);
-            await _context.SaveChangesAsync();
-            return Ok();
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePrice(int id, [FromBody] Price price)
-        {  if (price.Id != id)
-                return BadRequest();
-
-            _context.Entry(price).State = EntityState.Modified;
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Prices.Any(e => e.Id == id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-
-
-
-
+            return await _context.Prices
+                .Where(p => p.HotelId == hotelId)
+                .Include(p => p.Currency) 
+                .ToListAsync();
         }
 
 
+      
+        [HttpGet("calculate")]
+        public async Task<ActionResult<PriceCalculationResult>> CalculatePrice([FromQuery] int hotelId, [FromQuery] DateTime giris, [FromQuery] DateTime cikis, [FromQuery] int YetiskinSayisi, [FromQuery] int CocukSayisi)
+        {
+            if (giris >= cikis)
+            {
+                return BadRequest("Giriş tarihi, çıkış tarihinden önce olmalıdır.");
+            }
 
+            if(CocukSayisi<0 || YetiskinSayisi<1 || YetiskinSayisi>3 || CocukSayisi>2)
+            {  return BadRequest("Gecerli Yetiskin ve Cocuk sayisi girin."); }
 
+            
+            var priceInfo = await _context.Prices
+                .FirstOrDefaultAsync(p => p.HotelId == hotelId &&
+                                           giris >= p.GecerlilikBaslangic &&
+                                           cikis <= p.GecerlilikBitis);
+
+            if (priceInfo == null)
+            {
+                return NotFound("Belirtilen tarihler için uygun bir fiyat bulunamadı.");
+            }
+            var a = priceInfo.Amount;
+            var array = new decimal[][] {
+    new decimal[] { a * 1.5m, a * 1.5m, 2 * a },               
+    new decimal[] { 2 * a, 2 * a, 2 * a + (a / 2.0m) },       
+    new decimal[] { 2 * a + a * 0.75m, 3 * a, 4 * a }         
+};
+            var geceSayisi = (cikis - giris).TotalDays;
+            var toplamTutar = (decimal)geceSayisi * array[YetiskinSayisi-1][CocukSayisi];
+          
+
+            var result = new PriceCalculationResult
+            {
+                GecelikFiyat = priceInfo.Amount,
+                GeceSayisi = (int)geceSayisi,
+                ToplamTutar = toplamTutar,
+                ParaBirimiKodu = (await _context.Currencies.FindAsync(priceInfo.CurrencyId))?.Code
+            };
+
+            return Ok(result);
+        }
+
+        
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<Price>> GetPriceById(int id)
+        {
+            var price = await _context.Prices.FindAsync(id);
+            if (price == null) return NotFound();
+            return price;
+        }
+    }
+
+    
+    public class PriceCalculationResult
+    {
+        public decimal GecelikFiyat { get; set; }
+        public int GeceSayisi { get; set; }
+        public decimal ToplamTutar { get; set; }
+        public string ParaBirimiKodu { get; set; }
     }
 }

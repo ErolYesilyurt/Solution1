@@ -191,17 +191,7 @@
   },
   {
     "ContainingType": "Rezervasyon.Api.Controllers.PricesController",
-    "Method": "GetPrices",
-    "RelativePath": "api/Prices",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Rezervasyon.Api.Controllers.PricesController",
-    "Method": "AddPrices",
+    "Method": "PostPrice",
     "RelativePath": "api/Prices",
     "HttpMethod": "POST",
     "IsController": true,
@@ -213,12 +203,146 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "Rezervasyon.Api.Models.Price",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "Rezervasyon.Api.Controllers.PricesController",
-    "Method": "DeletePrice",
+    "Method": "GetPriceById",
     "RelativePath": "api/Prices/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Rezervasyon.Api.Models.Price",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Rezervasyon.Api.Controllers.PricesController",
+    "Method": "CalculatePrice",
+    "RelativePath": "api/Prices/calculate",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "hotelId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "giris",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      },
+      {
+        "Name": "cikis",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      },
+      {
+        "Name": "YetiskinSayisi",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "CocukSayisi",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Rezervasyon.Api.Controllers.PriceCalculationResult",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Rezervasyon.Api.Controllers.PricesController",
+    "Method": "GetPricesForHotel",
+    "RelativePath": "api/Prices/forHotel/{hotelId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "hotelId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[Rezervasyon.Api.Models.Price, Rezervasyon.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Rezervasyon.Api.Controllers.ReservationsController",
+    "Method": "GetReservations",
+    "RelativePath": "api/Reservations",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Rezervasyon.Api.Controllers.ReservationsController",
+    "Method": "AddReservation",
+    "RelativePath": "api/Reservations",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "reservation",
+        "Type": "Rezervasyon.Api.Models.Reservation",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Rezervasyon.Api.Controllers.ReservationsController",
+    "Method": "DeleteReservation",
+    "RelativePath": "api/Reservations/{id}",
     "HttpMethod": "DELETE",
     "IsController": true,
     "Order": 0,
@@ -232,9 +356,9 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "Rezervasyon.Api.Controllers.PricesController",
-    "Method": "UpdatePrice",
-    "RelativePath": "api/Prices/{id}",
+    "ContainingType": "Rezervasyon.Api.Controllers.ReservationsController",
+    "Method": "EditReservation",
+    "RelativePath": "api/Reservations/{id}",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -245,11 +369,31 @@
         "IsRequired": true
       },
       {
-        "Name": "price",
-        "Type": "Rezervasyon.Api.Models.Price",
+        "Name": "reservation",
+        "Type": "Rezervasyon.Api.Models.Reservation",
         "IsRequired": true
       }
     ],
     "ReturnTypes": []
+  },
+  {
+    "ContainingType": "UsersController",
+    "Method": "GetUsers",
+    "RelativePath": "api/Users",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[Rezervasyon.Api.Models.User, Rezervasyon.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   }
 ]
