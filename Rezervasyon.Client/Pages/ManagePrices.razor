@@ -89,6 +89,10 @@
                         <td>@price.Amount.ToString("N2") @price.Currency.Code</td>
                         <td>@price.GecerlilikBaslangic.ToShortDateString()</td>
                         <td>@price.GecerlilikBitis.ToShortDateString()</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" @onclick="() => UpdatePrice(price)">Düzenle</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => DeletePrice(price.Id)">Sil</button>
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -104,9 +108,11 @@
     private int selectedHotelId;
     private Price newPrice = new() { GecerlilikBaslangic = DateTime.Today, GecerlilikBitis = DateTime.Today.AddMonths(1) };
 
+    private bool isModalvisible= false;
+    private bool isEditMode = false;
     protected override async Task OnInitializedAsync()
     {
-       
+
         allHotels = (await Http.GetFromJsonAsync<Hotel[]>("api/hotels"))?.ToList();
         allCurrencies = (await Http.GetFromJsonAsync<Currency[]>("api/currencies"))?.ToList();
     }
@@ -133,5 +139,19 @@
                 await LoadPricesForSelectedHotel(); 
             }
         }
+    }
+
+    private async Task DeletePrice(int id)
+    {
+        await Http.DeleteAsync($"api/prices/{id}");
+
+        LoadPricesForSelectedHotel();
+
+    }
+
+    private async Task UpdatePrice(Price price)
+    {
+        await Http.PutAsJsonAsync($"api/prices/{price.Id}",price);
+
     }
 }

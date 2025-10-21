@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Rezervasyon.Api.Models
 {
@@ -21,10 +22,12 @@ namespace Rezervasyon.Api.Models
         public string Aciklama { get; set; } 
 
         public int UserId { get; set; }
+        [ValidateNever]
         public virtual User User { get; set; }
 
        
         public int HotelId { get; set; }
+        [ValidateNever]
         public virtual Hotel Hotel { get; set; }
     }
 }

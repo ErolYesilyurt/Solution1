@@ -31,8 +31,8 @@ else
             @foreach (var reservation in reservations)
             {
                 <tr>
-                    <td>@reservation.Hotel?.Name ?? "Bilinmiyor"</td>
-                    <td>@reservation.User?.Username ?? "Bilinmiyor"</td>
+                    <td>@reservation.Hotel?.Name</td>
+                    <td>@reservation.User?.Username</td>
                     <td>@reservation.GirisTarihi.ToShortDateString()</td>
                     <td>@reservation.CikisTarihi.ToShortDateString()</td>
                     <td>@reservation.ToplamFiyat.ToString("N2")</td>
@@ -116,7 +116,10 @@ else
                                     {
                                         <p class="fw-bold fs-5">
                                             @calculatedPriceInfo.ToplamTutar.ToString("N2") @calculatedPriceInfo.ParaBirimiKodu
-                                            <small class="text-muted fw-normal">(@calculatedPriceInfo.GeceSayisi gece x @calculatedPriceInfo.GecelikFiyat.ToString("N2") @calculatedPriceInfo.ParaBirimiKodu)</small>
+                                            <small class="text-muted fw-normal">
+                                                (@calculatedPriceInfo.GeceSayisi gece x @calculatedPriceInfo.GecelikFiyat.ToString("N2") @calculatedPriceInfo.ParaBirimiKodu /gece)
+                                                (@currentReservation.YetiskinSayisi Yetiskin @currentReservation.CocukSayisi Cocuk)
+                                            </small>
                                         </p>
                                     }
                                     else
@@ -152,11 +155,11 @@ else
     private bool isEditMode = false;
     private Reservation currentReservation = new();
 
-  
+
     private PriceCalculationResult? calculatedPriceInfo;
     private bool isCalculatingPrice = false;
     private string? priceCalculationError;
-    
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -182,18 +185,30 @@ else
         calculatedPriceInfo = null; 
         priceCalculationError = null;
         isModalVisible = true;
-        
+
         _ = CalculatePriceAsync();
     }
 
     private void OpenEditModal(Reservation reservation)
     {
         isEditMode = true;
-        currentReservation = new Reservation {};
+        currentReservation = new Reservation
+        {
+            Id = reservation.Id, 
+            GirisTarihi = reservation.GirisTarihi,
+            CikisTarihi = reservation.CikisTarihi,
+            YetiskinSayisi = reservation.YetiskinSayisi,
+            CocukSayisi = reservation.CocukSayisi,
+            ToplamFiyat = reservation.ToplamFiyat,
+            Aciklama = reservation.Aciklama,
+            UserId = reservation.UserId,
+            HotelId = reservation.HotelId
+        };
+
         calculatedPriceInfo = null; 
         priceCalculationError = null;
         isModalVisible = true;
-       
+
         _ = CalculatePriceAsync();
     }
 
@@ -202,7 +217,7 @@ else
 
     private async Task CalculatePriceAsync()
     {
-      
+
         if (currentReservation.HotelId <= 0 || currentReservation.GirisTarihi == default || currentReservation.CikisTarihi == default || currentReservation.GirisTarihi >= currentReservation.CikisTarihi)
         {
             calculatedPriceInfo = null;
@@ -219,7 +234,7 @@ else
 
         try
         {
-            
+
             string requestUri = $"api/prices/calculate?hotelId={currentReservation.HotelId}&giris={currentReservation.GirisTarihi:yyyy-MM-dd}&cikis={currentReservation.CikisTarihi:yyyy-MM-dd}&yetiskinsayisi={currentReservation.YetiskinSayisi}&cocuksayisi={currentReservation.CocukSayisi}";
             var response = await Http.GetAsync(requestUri);
 
@@ -228,13 +243,13 @@ else
                 calculatedPriceInfo = await response.Content.ReadFromJsonAsync<PriceCalculationResult>();
                 if (calculatedPriceInfo != null)
                 {
-                   
+
                     currentReservation.ToplamFiyat = calculatedPriceInfo.ToplamTutar;
                 }
             }
             else
             {
-                
+
                 priceCalculationError = $"Fiyat hesaplanamadı: {await response.Content.ReadAsStringAsync()}";
                 currentReservation.ToplamFiyat = 0; 
             }
@@ -254,7 +269,7 @@ else
 
     private async Task HandleSave()
     {
-        
+
         await CalculatePriceAsync();
         if (priceCalculationError != null || currentReservation.ToplamFiyat <= 0)
         {
@@ -262,11 +277,31 @@ else
             return; 
         }
 
-        if (isEditMode) {  }
-        else { }
+        if (isEditMode) { var response = await Http.PutAsJsonAsync($"api/reservations/{currentReservation.Id}", currentReservation); 
+
+            if (!response.IsSuccessStatusCode)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"Rezervasyon kaydedilemedi: {await response.Content.ReadAsStringAsync()}");
+                return;
+            }
+
+        }
+        else { var response = await Http.PostAsJsonAsync("api/reservations", currentReservation); 
+            if(!response.IsSuccessStatusCode)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"Rezervasyon kaydedilemedi: {await response.Content.ReadAsStringAsync()}");
+                return;
+            }
+        }
+
         CloseModal();
         await ReloadReservations();
     }
 
-    private async Task DeleteReservation(int id) { }
+    private async Task DeleteReservation(int id)
+    {
+
+        var response = await Http.DeleteAsync($"api/reservations/{id}");
+        await ReloadReservations();
+    }
 }

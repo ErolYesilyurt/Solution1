@@ -93,6 +93,41 @@ namespace Rezervasyon.Api.Controllers
             if (price == null) return NotFound();
             return price;
         }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeletePrice(int id)
+        { var price = _context.Prices.FirstOrDefault(x => x.Id == id);
+            if (price == null)
+                return BadRequest();
+            _context.Prices.Remove(price);
+           await _context.SaveChangesAsync();
+            return Ok();
+
+          }
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdatePrice(int id,[FromBody] Price price)
+        { if (price == null || id != price.Id)
+                return BadRequest();
+
+            _context.Entry(price).State = EntityState.Modified;
+            try
+            {
+                _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                if(!_context.Prices.Any(x => x.Id == id))
+                    return NotFound();
+                else
+                    throw;
+            }
+            
+            return NoContent();
+
+        }
     }
 
     
