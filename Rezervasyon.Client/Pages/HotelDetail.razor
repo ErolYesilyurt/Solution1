@@ -1,0 +1,218 @@
+﻿@page "/hotel/{Id:int}"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Components // [SupplyParameterFromQuery] için
+@using System.Security.Claims // UserId almak için
+@using Rezervasyon.Client.Models // Veya Dtos
+@using System.ComponentModel.DataAnnotations
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider // UserId almak için
+
+@if (hotel == null)
+{
+    <p><em>Otel bilgileri yükleniyor...</em></p>
+}
+else
+{
+    <PageTitle>@hotel.Name</PageTitle>
+
+    <div class="row">
+        <div class="col-md-7">
+            <h1>@hotel.Name</h1>
+            <p class="text-muted">@hotel.City</p>
+            <p><strong>Yıldız Sayısı:</strong> @hotel.Stars ⭐</p>
+            <hr />
+            <p>Otel açıklaması...</p>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h4>Rezervasyon Yap</h4>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="reservationDetails" OnValidSubmit="HandleReservation">
+                        <DataAnnotationsValidator />
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="form-label">Giriş Tarihi</label>
+                                <InputDate class="form-control" @bind-Value="reservationDetails.CheckInDate" @bind-Value:after="CalculatePriceAsync" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Çıkış Tarihi</label>
+                                <InputDate class="form-control" @bind-Value="reservationDetails.CheckOutDate" @bind-Value:after="CalculatePriceAsync" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Yetişkin</label>
+                                <InputNumber class="form-control" @bind-Value="reservationDetails.AdultCount" @bind-Value:after="CalculatePriceAsync" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Çocuk</label>
+                                <InputNumber class="form-control" @bind-Value="reservationDetails.ChildCount" @bind-Value:after="CalculatePriceAsync" />
+                            </div>
+
+                            <div class="col-12 mt-3">
+                                <label class="form-label">Hesaplanan Fiyat:</label>
+                                @if (isCalculatingPrice)
+                                {
+                                    <p><em>Fiyat hesaplanıyor...</em></p>
+                                }
+                                else if (!string.IsNullOrEmpty(priceCalculationError))
+                                {
+                                    <div class="alert alert-danger py-1">@priceCalculationError</div>
+                                }
+                                else if (calculatedPriceInfo != null)
+                                {
+                                    <p class="fw-bold fs-5">
+                                        @calculatedPriceInfo.ToplamTutar.ToString("N2") @calculatedPriceInfo.ParaBirimiKodu
+                                        <small class="text-muted fw-normal">(@calculatedPriceInfo.GeceSayisi gece)</small>
+                                    </p>
+                                }
+                                else
+                                {
+                                    <p><em>Fiyatı hesaplamak için tarihleri ve kişi sayısını girin.</em></p>
+                                }
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Açıklama (İsteğe Bağlı)</label>
+                                <InputTextArea class="form-control" @bind-Value="reservationDetails.Description" />
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 mt-3" disabled="@(isCalculatingPrice || calculatedPriceInfo == null)">
+                            Rezervasyonu Tamamla
+                        </button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; } // Otel ID'si Route'dan gelir
+
+    // Query String'den gelen arama kriterleri
+    [SupplyParameterFromQuery] public DateTime? checkIn { get; set; }
+    [SupplyParameterFromQuery] public DateTime? checkOut { get; set; }
+    [SupplyParameterFromQuery] public int adults { get; set; } = 1; // Default değerler önemli
+    [SupplyParameterFromQuery] public int children { get; set; } = 0;
+
+    private Hotel? hotel;
+    private ReservationDetails reservationDetails = new(); // Form için model
+    private PriceCalculationResult? calculatedPriceInfo;
+    private bool isCalculatingPrice = false;
+    private string? priceCalculationError;
+    private string? currentUserId; // Giriş yapan kullanıcının ID'si
+
+  
+    public class ReservationDetails
+    {
+        [Required]
+        public DateTime CheckInDate { get; set; }
+        [Required]
+        public DateTime CheckOutDate { get; set; }
+        [Range(1, 10)]
+        public int AdultCount { get; set; }
+        [Range(0, 10)]
+        public int ChildCount { get; set; }
+        public string? Description { get; set; }
+       
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Önce otel detayını çek
+        hotel = await Http.GetFromJsonAsync<Hotel>($"api/hotels/{Id}");
+
+        // Sonra giriş yapan kullanıcının ID'sini al
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        currentUserId = authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+
+        // Query string'den gelen değerlerle formu başlat
+        reservationDetails.CheckInDate = checkIn ?? DateTime.Today;
+        reservationDetails.CheckOutDate = checkOut ?? DateTime.Today.AddDays(1);
+        reservationDetails.AdultCount = adults > 0 ? adults : 1; // En az 1 yetişkin
+        reservationDetails.ChildCount = children >= 0 ? children : 0;
+
+        // Sayfa yüklendiğinde ilk fiyatı hesapla
+        await CalculatePriceAsync();
+    }
+
+    private async Task CalculatePriceAsync()
+    {
+        // CalculatePriceAsync metodu Reservations.razor'daki ile çok benzer olacak
+        // Sadece currentReservation yerine reservationDetails kullanılır.
+
+        if (Id <= 0 || reservationDetails.CheckInDate == default || reservationDetails.CheckOutDate == default || reservationDetails.CheckInDate >= reservationDetails.CheckOutDate || reservationDetails.AdultCount <= 0)
+        {
+            calculatedPriceInfo = null;
+            priceCalculationError = "Lütfen geçerli tarih aralığı ve en az 1 yetişkin seçin.";
+            StateHasChanged();
+            return;
+        }
+
+        isCalculatingPrice = true;
+        priceCalculationError = null;
+        calculatedPriceInfo = null;
+        StateHasChanged();
+
+        try
+        { 
+            string requestUri = $"api/prices/calculate?hotelId={Id}&giris={reservationDetails.CheckInDate:yyyy-MM-dd}&cikis={reservationDetails.CheckOutDate:yyyy-MM-dd}&yetiskinsayisi={reservationDetails.AdultCount}&cocuksayisi={reservationDetails.ChildCount}";
+            var response = await Http.GetAsync(requestUri);
+
+            if (response.IsSuccessStatusCode)
+            {
+                calculatedPriceInfo = await response.Content.ReadFromJsonAsync<PriceCalculationResult>();
+            }
+            else
+            {
+                priceCalculationError = $"Fiyat hesaplanamadı: ({response.StatusCode}) {await response.Content.ReadAsStringAsync()}";
+            }
+        }
+        catch (Exception ex) { priceCalculationError = $"Hesaplama hatası: {ex.Message}"; }
+        finally { isCalculatingPrice = false; StateHasChanged(); }
+    }
+
+    private async Task HandleReservation()
+    {
+        if (calculatedPriceInfo == null || priceCalculationError != null || string.IsNullOrEmpty(currentUserId))
+        {
+            // Kullanıcıya hata göster (örn: alert)
+            Console.WriteLine("Fiyat hesaplanamadı veya kullanıcı ID'si alınamadı.");
+            return;
+        }
+
+        // API'ye göndereceğimiz Reservation nesnesini oluştur
+        var newReservation = new Reservation
+        {
+            GirisTarihi = reservationDetails.CheckInDate,
+            CikisTarihi = reservationDetails.CheckOutDate,
+            YetiskinSayisi = reservationDetails.AdultCount,
+            CocukSayisi = reservationDetails.ChildCount,
+            ToplamFiyat = calculatedPriceInfo.ToplamTutar,
+            Aciklama = reservationDetails.Description ?? string.Empty,
+            UserId = int.Parse(currentUserId), // String'i int'e çevir
+            HotelId = Id // Sayfanın parametresinden gelen otel ID'si
+        };
+
+        // API'ye POST isteği gönder
+        var response = await Http.PostAsJsonAsync("api/reservations", newReservation);
+
+        if (response.IsSuccessStatusCode)
+        {
+            // Başarılı olursa kullanıcıyı bilgilendir ve belki başka bir sayfaya yönlendir
+            Console.WriteLine("Rezervasyon başarıyla oluşturuldu!");
+            NavigationManager.NavigateTo("/my-reservations"); // Örnek yönlendirme
+        }
+        else
+        {
+            // API'den gelen hatayı göster
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Rezervasyon oluşturulamadı: ({response.StatusCode}) {errorMessage}");
+            // Kullanıcıya hata mesajı gösterilebilir (örn: alert)
+        }
+    }
+}

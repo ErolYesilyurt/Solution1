@@ -1069,6 +1069,11 @@ C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\compres
 C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\compressed\3rsud8cyvd-rpbpfnzd65.gz
 C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\compressed\ol6elvnhc4-vw6dpka42w.gz
 C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\compressed\ef1ov1ebe5-vhfw8f9f40.gz
-C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\compressed\x8kp95ds77-oaob4l1hgg.gz
-C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\compressed\5fj5gwsq2g-c1su4nh6k0.gz
-C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\compressed\40qh1yiqfd-xmd1v759js.gz
+C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\bin\Debug\net8.0\wwwroot\_framework\Microsoft.AspNetCore.WebUtilities.wasm
+C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\bin\Debug\net8.0\wwwroot\_framework\Microsoft.AspNetCore.WebUtilities.wasm.gz
+C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\bin\Debug\net8.0\Microsoft.AspNetCore.WebUtilities.dll
+C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\webcil\Microsoft.AspNetCore.WebUtilities.wasm
+C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\compressed\78s6wrf50g-4z31k71hq7.gz
+C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\compressed\x8kp95ds77-ihj6lrxg68.gz
+C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\compressed\5fj5gwsq2g-m4mrqx45wt.gz
+C:\Users\Erol\source\repos\Solution1\Rezervasyon.Client\obj\Debug\net8.0\compressed\40qh1yiqfd-sq1d7makpv.gz

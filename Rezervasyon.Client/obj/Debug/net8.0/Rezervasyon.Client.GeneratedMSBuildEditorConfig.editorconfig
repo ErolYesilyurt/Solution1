@@ -52,6 +52,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSG9tZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Erol/source/repos/Solution1/Rezervasyon.Client/Pages/HotelDetail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSG90ZWxEZXRhaWwucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Erol/source/repos/Solution1/Rezervasyon.Client/Pages/Hotels.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSG90ZWxzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
@@ -70,6 +74,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/Erol/source/repos/Solution1/Rezervasyon.Client/Pages/Reservations.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVzZXJ2YXRpb25zLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Erol/source/repos/Solution1/Rezervasyon.Client/Pages/SearchResults.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VhcmNoUmVzdWx0cy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Erol/source/repos/Solution1/Rezervasyon.Client/_Imports.razor]

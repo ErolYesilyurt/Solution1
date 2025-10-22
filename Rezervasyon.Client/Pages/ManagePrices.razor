@@ -23,19 +23,30 @@
 
 @if (selectedHotelId > 0)
 {
-    <div class="card mb-4">
-        <div class="card-header">Yeni Fiyat Ekle</div>
-        <div class="card-body">
-            <EditForm Model="newPrice" OnValidSubmit="HandleAddPrice">
+    <button class="btn btn-primary mb-3" @onclick="OpenAddModal">Yeni Fiyat Ekle</button>
+    @if(isModalvisible)
+    {
+
+    <div class="modal fade show" tabindex="-1" style="display: block;" role="dialog">
+     <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">@(isEditMode ? "Rezervasyonu Düzenle" : "Yeni Rezervasyon Ekle")</h5>
+                        <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                    </div>
+                    <div class="modal-body">
+
+            <EditForm Model="currentPrice" OnValidSubmit="HandleSave">
                 <DataAnnotationsValidator />
                 <div class="row g-3">
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <label>Tutar</label>
-                        <InputNumber class="form-control" @bind-Value="newPrice.Amount" />
+                        <InputNumber class="form-control" @bind-Value="currentPrice.Amount" />
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <label>Para Birimi</label>
-                        <InputSelect class="form-select" @bind-Value="newPrice.CurrencyId">
+                        <InputSelect class="form-select" @bind-Value="currentPrice.CurrencyId">
                             <option value="0" disabled>-- Seçin --</option>
                             @if (allCurrencies != null)
                             {
@@ -46,19 +57,29 @@
                             }
                         </InputSelect>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <label>Geçerlilik Başlangıcı</label>
-                        <InputDate class="form-control" @bind-Value="newPrice.GecerlilikBaslangic" />
+                        <InputDate class="form-control" @bind-Value="currentPrice.GecerlilikBaslangic" />
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <label>Geçerlilik Bitişi</label>
-                        <InputDate class="form-control" @bind-Value="newPrice.GecerlilikBitis" />
+                        <InputDate class="form-control" @bind-Value="currentPrice.GecerlilikBitis" />
                     </div>
                 </div>
-                <button type="submit" class="btn btn-success mt-3">Fiyatı Ekle</button>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" @onclick="CloseModal">İptal</button>
+                                <button type="submit" class="btn btn-primary">Kaydet</button>
+                            </div>
             </EditForm>
         </div>
     </div>
+    </div>
+		</div>
+        <div class="modal-backdrop fade show">
+        </div>
+        
+    }
+
 
     <h4>Mevcut Fiyat Tanımları</h4>
     @if (pricesForSelectedHotel == null)
@@ -90,15 +111,15 @@
                         <td>@price.GecerlilikBaslangic.ToShortDateString()</td>
                         <td>@price.GecerlilikBitis.ToShortDateString()</td>
                         <td>
-                            <button class="btn btn-warning btn-sm" @onclick="() => UpdatePrice(price)">Düzenle</button>
+                            <button class="btn btn-warning btn-sm" @onclick="() => OpenEditMOdal(price)">Düzenle</button>
                             <button class="btn btn-danger btn-sm" @onclick="() => DeletePrice(price.Id)">Sil</button>
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
-    }
-}
+    }}
+
 
 @code {
     private List<Hotel>? allHotels;
@@ -106,7 +127,7 @@
     private List<Price>? pricesForSelectedHotel;
 
     private int selectedHotelId;
-    private Price newPrice = new() { GecerlilikBaslangic = DateTime.Today, GecerlilikBitis = DateTime.Today.AddMonths(1) };
+    private Price currentPrice = new() { GecerlilikBaslangic = DateTime.Today, GecerlilikBitis = DateTime.Today.AddMonths(1) };
 
     private bool isModalvisible= false;
     private bool isEditMode = false;
@@ -129,15 +150,45 @@
 
     private async Task HandleAddPrice()
     {
-        if (selectedHotelId > 0 && newPrice.CurrencyId > 0)
+        if (selectedHotelId > 0 && currentPrice.CurrencyId > 0)
         {
-            newPrice.HotelId = selectedHotelId;
-            var response = await Http.PostAsJsonAsync("api/prices", newPrice);
+            currentPrice.HotelId = selectedHotelId;
+            var response = await Http.PostAsJsonAsync("api/prices", currentPrice);
             if (response.IsSuccessStatusCode)
             {
-                newPrice = new() { GecerlilikBaslangic = DateTime.Today, GecerlilikBitis = DateTime.Today.AddMonths(1) };
+                currentPrice = new() { GecerlilikBaslangic = DateTime.Today, GecerlilikBitis = DateTime.Today.AddMonths(1) };
                 await LoadPricesForSelectedHotel(); 
             }
+        }
+    }
+
+    private async Task HandleSave()
+    {
+        currentPrice.HotelId = selectedHotelId; // HotelId'nin doğru olduğundan emin ol
+
+        HttpResponseMessage response;
+        if (isEditMode)
+        {
+            // Doğrudan PUT isteğini burada gönderiyoruz
+            response = await Http.PutAsJsonAsync($"api/prices/{currentPrice.Id}", currentPrice);
+        }
+        else
+        {
+            // Doğrudan POST isteğini burada gönderiyoruz
+            response = await Http.PostAsJsonAsync("api/prices", currentPrice);
+        }
+
+        if (response.IsSuccessStatusCode)
+        {
+            CloseModal();
+            await LoadPricesForSelectedHotel(); // Listeyi yenile
+        }
+        else
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            // Hata mesajını kullanıcıya göster (opsiyonel ama önerilir)
+            Console.WriteLine($"Fiyat kaydedilemedi: ({response.StatusCode}) {errorMessage}");
+            // await JSRuntime.InvokeVoidAsync("alert", $"Fiyat kaydedilemedi: ({response.StatusCode}) {errorMessage}");
         }
     }
 
@@ -145,7 +196,7 @@
     {
         await Http.DeleteAsync($"api/prices/{id}");
 
-        LoadPricesForSelectedHotel();
+        await LoadPricesForSelectedHotel();
 
     }
 
@@ -153,5 +204,36 @@
     {
         await Http.PutAsJsonAsync($"api/prices/{price.Id}",price);
 
+        await LoadPricesForSelectedHotel();
+
     }
+
+    private void OpenAddModal()
+    {
+        isEditMode = false;
+        isModalvisible = true;
+        currentPrice = new Price
+        {
+            GecerlilikBaslangic = DateTime.Today,
+            GecerlilikBitis = DateTime.Today.AddMonths(1)
+        };
+	}
+
+    private void OpenEditMOdal(Price price)
+    {
+        isEditMode = true;
+        isModalvisible = true;
+        currentPrice = new Price
+            {
+                Amount = price.Amount,
+                CurrencyId = price.CurrencyId,
+                GecerlilikBaslangic = price.GecerlilikBaslangic,
+                GecerlilikBitis = price.GecerlilikBitis,
+                Id = price.Id
+
+            };
+       
+	}
+
+	private void CloseModal() => isModalvisible = false;
 }

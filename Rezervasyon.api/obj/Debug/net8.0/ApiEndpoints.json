@@ -190,6 +190,52 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "Rezervasyon.Api.Controllers.HotelsController",
+    "Method": "SearchAvailableHotelsWithPrice",
+    "RelativePath": "api/Hotels/search-with-price",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "destination",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "checkIn",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      },
+      {
+        "Name": "checkOut",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      },
+      {
+        "Name": "adults",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "children",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[Rezervasyon.Api.Models.HotelSearchResultDto, Rezervasyon.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
     "ContainingType": "Rezervasyon.Api.Controllers.PricesController",
     "Method": "PostPrice",
     "RelativePath": "api/Prices",

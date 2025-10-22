@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "Rezervasyon.Client",
   "resources": {
-    "hash": "sha256-nl/MSZQEhslzDO1GSyb5VIYs2uR31VSSWiWYRAj0O6c=",
+    "hash": "sha256-heTEL9s6SWmWp+GOhN6M7P2jrIdhwCQx3oyvd+ymzAA=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-D0bzod5lwwSzPR43JC8TTCcZKw+3jIHOk8CZFCRj5is="
     },
@@ -30,6 +30,7 @@
       "Microsoft.AspNetCore.Metadata.wasm": "sha256-hM/F4AmeV1d8CFA9vKjyi4psF44C6megAVwvgVjghzQ=",
       "Microsoft.AspNetCore.Mvc.Abstractions.wasm": "sha256-j6JZlsEUb1o4l+vICgRE2dGpULwhBBXXRdQEjOo3C4k=",
       "Microsoft.AspNetCore.Routing.Abstractions.wasm": "sha256-P40QIMDnLSgSyIDX+T6b/vJp3BAHSY9fCgOHP7xz0tA=",
+      "Microsoft.AspNetCore.WebUtilities.wasm": "sha256-YCpj1LNQpMxfSKDSryT0Eyy1Pwf6AvZTW/6KRcrb+Ns=",
       "Microsoft.Extensions.Configuration.wasm": "sha256-UDGEQR7J3WTfzYMgOzxVIBwFQtKEeJvO8UgrWagypdE=",
       "Microsoft.Extensions.Configuration.Abstractions.wasm": "sha256-yNdqbqDWGiJo943D7LPak5xryCBEsNH0wtdiuU1R9VE=",
       "Microsoft.Extensions.Configuration.Binder.wasm": "sha256-fNNlyyW44y8Gp6dvOtsvHoVNzpT8lrKmPleg5CDhRAo=",
@@ -216,10 +217,10 @@
       "mscorlib.wasm": "sha256-8qWtIcy8fV43tlcx4DxsF45RlkcfK6588vVoxF7be2E=",
       "netstandard.wasm": "sha256-eOgz2RiO4YaPLOMIGgVLNrcfsQhmLQJzR0N7Pu2teXc=",
       "System.Private.CoreLib.wasm": "sha256-F8T63QCIbMPXPQPqTcuyBAw+oVvZSrWjy88j7fiJQZ4=",
-      "Rezervasyon.Client.wasm": "sha256-QGigtQECVWeKkGyfgEY7FyEG3wieI+D61waTWAEuo+o="
+      "Rezervasyon.Client.wasm": "sha256-Jjl5PDgNeOoVZ2GBPOpb4ql+QoRWQUQGFk24lysSJJY="
     },
     "pdb": {
-      "Rezervasyon.Client.pdb": "sha256-cLnqG+iOp8Y4EjfmAcBwBkiXfzMhdBEIN3zNgqFsJKM="
+      "Rezervasyon.Client.pdb": "sha256-OllL6pMhs1zavHYM4org92iBoB35gorY7P/xlzCk4jY="
     }
   },
   "cacheBootResources": true,
