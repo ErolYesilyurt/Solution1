@@ -11,35 +11,31 @@
         <EditForm Model="searchCriteria" OnValidSubmit="PerformSearch">
             <DataAnnotationsValidator />
             <div class="row g-3 align-items-end">
+
                 <div class="col-lg-4 col-md-12 mb-2 mb-lg-0">
-                    <label for="destination" class="form-label visually-hidden">Hedef</label>
-                    <InputText id="destination" class="form-control form-control-lg" placeholder="Şehir veya Otel Adı" @bind-Value="searchCriteria.Destination" />
+                    <label for="destination" class="form-label">Hedef</label> <InputText id="destination" class="form-control form-control-lg" placeholder="Şehir veya Otel Adı" @bind-Value="searchCriteria.Destination" />
                     <ValidationMessage For="@(() => searchCriteria.Destination)" />
                 </div>
 
                 <div class="col-lg col-md-6 mb-2 mb-lg-0">
-                    <label for="checkin" class="form-label visually-hidden">Giriş Tarihi</label>
-                    <InputDate id="checkin" class="form-control" @bind-Value="searchCriteria.CheckInDate" />
+                    <label for="checkin" class="form-label">Giriş Tarihi</label> <InputDate id="checkin" class="form-control" @bind-Value="searchCriteria.CheckInDate" />
                     <ValidationMessage For="@(() => searchCriteria.CheckInDate)" />
                 </div>
 
                 <div class="col-lg col-md-6 mb-2 mb-lg-0">
-                    <label for="checkout" class="form-label visually-hidden">Çıkış Tarihi</label>
-                    <InputDate id="checkout" class="form-control" @bind-Value="searchCriteria.CheckOutDate" />
+                    <label for="checkout" class="form-label">Çıkış Tarihi</label> <InputDate id="checkout" class="form-control" @bind-Value="searchCriteria.CheckOutDate" />
                     <ValidationMessage For="@(() => searchCriteria.CheckOutDate)" />
                 </div>
 
                 <div class="col-lg-2 col-md-6 mb-2 mb-lg-0">
-                    <label for="adults" class="form-label visually-hidden">Yetişkin</label>
-                    <InputNumber id="adults" class="form-control" placeholder="Yetişkin" @bind-Value="searchCriteria.AdultCount" />
+                    <label for="adults" class="form-label">Yetişkin</label> <InputNumber id="adults" class="form-control" @bind-Value="searchCriteria.AdultCount" />
                     <ValidationMessage For="@(() => searchCriteria.AdultCount)" />
                 </div>
 
-               <div class="col-lg-1 col-md-6 mb-2 mb-lg-0"> 
-               <label for="children" class="form-label visually-hidden">Çocuk</label> 
-               <InputNumber id="children" class="form-control" placeholder="Çocuk" @bind-Value="searchCriteria.ChildCount" /> 
-               <ValidationMessage For="@(() => searchCriteria.ChildCount)" /> 
-               </div> 
+                <div class="col-lg-1 col-md-6 mb-2 mb-lg-0">
+                    <label for="children" class="form-label">Çocuk</label> <InputNumber id="children" class="form-control" @bind-Value="searchCriteria.ChildCount" />
+                    <ValidationMessage For="@(() => searchCriteria.ChildCount)" />
+                </div>
 
 
                 <div class="col-lg-auto col-md-12">
@@ -53,11 +49,7 @@
     </div>
 
     
-    <div class="mt-3">
-        <small>Popüler Aramalar:</small>
-        <a href="/search-results?destination=Antalya" class="link-secondary">Antalya Otelleri</a> |
-        <a href="/search-results?destination=İstanbul" class="link-secondary">İstanbul Otelleri</a>
-    </div>
+    
 
 </div>
 

@@ -40,17 +40,17 @@
     {
         try
         {
-            // Hotel nesnesini JSON'a çevirip API'deki Post metoduna gönderiyoruz
+            
             var response = await Http.PostAsJsonAsync("api/hotels", hotel);
 
             if (response.IsSuccessStatusCode)
             {
-                // Başarılı olursa, otel listesi sayfasına geri yönlendir
+               
                 Navigation.NavigateTo("/hotels");
             }
             else
             {
-                // Hata yönetimi burada yapılabilir (örneğin kullanıcıya bir mesaj gösterme)
+               
                 Console.WriteLine("Otel eklenirken bir hata oluştu.");
             }
         }

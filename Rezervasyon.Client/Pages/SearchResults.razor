@@ -95,7 +95,7 @@ else
 
         try
         { 
-            // API'ye yeni endpoint ile istek gönder
+            
             string requestUri = $"api/hotels/search-with-price?destination={Uri.EscapeDataString(destination)}&checkIn={checkIn.Value:yyyy-MM-dd}&checkOut={checkOut.Value:yyyy-MM-dd}&adults={adults}&children={children}";
             var response = await Http.GetAsync(requestUri);
 
@@ -115,12 +115,12 @@ else
         finally
         {
             isLoading = false;
-            StateHasChanged(); // Sonucu veya hatayı göster
+            StateHasChanged(); 
         }
     }
 
     private void GoBackToSearch()
     {
-        NavigationManager.NavigateTo("/"); // Ana sayfaya (arama formuna) geri dön
+        NavigationManager.NavigateTo("/"); 
     }
 }

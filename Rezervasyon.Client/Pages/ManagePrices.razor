@@ -164,31 +164,31 @@
 
     private async Task HandleSave()
     {
-        currentPrice.HotelId = selectedHotelId; // HotelId'nin doğru olduğundan emin ol
+        currentPrice.HotelId = selectedHotelId; 
 
         HttpResponseMessage response;
         if (isEditMode)
         {
-            // Doğrudan PUT isteğini burada gönderiyoruz
+            
             response = await Http.PutAsJsonAsync($"api/prices/{currentPrice.Id}", currentPrice);
         }
         else
         {
-            // Doğrudan POST isteğini burada gönderiyoruz
+            
             response = await Http.PostAsJsonAsync("api/prices", currentPrice);
         }
 
         if (response.IsSuccessStatusCode)
         {
             CloseModal();
-            await LoadPricesForSelectedHotel(); // Listeyi yenile
+            await LoadPricesForSelectedHotel(); 
         }
         else
         {
             var errorMessage = await response.Content.ReadAsStringAsync();
-            // Hata mesajını kullanıcıya göster (opsiyonel ama önerilir)
+            
             Console.WriteLine($"Fiyat kaydedilemedi: ({response.StatusCode}) {errorMessage}");
-            // await JSRuntime.InvokeVoidAsync("alert", $"Fiyat kaydedilemedi: ({response.StatusCode}) {errorMessage}");
+            
         }
     }
 

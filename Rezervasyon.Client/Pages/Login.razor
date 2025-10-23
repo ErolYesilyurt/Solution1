@@ -52,10 +52,10 @@
                 var result = await response.Content.ReadFromJsonAsync<LoginResult>();
                 await localStorage.SetItemAsStringAsync("authToken", result.Token);
 
-                // Auth provider'a kullanıcının giriş yaptığını bildiriyoruz.
+                
                 ((CustomAuthenticationStateProvider)AuthStateProvider).NotifyUserAuthentication(result.Token);
 
-                Navigation.NavigateTo("/",forceLoad: true); // Ana sayfaya yönlendir
+                Navigation.NavigateTo("/",forceLoad: true); 
             }
             else
             {
@@ -68,7 +68,7 @@
         }
     }
 
-    // Bu class'lar API'ye gönderilecek ve API'den alınacak JSON verilerini temsil ediyor.
+    
     public class LoginModel
     {
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Kullanıcı adı zorunludur.")]
@@ -80,7 +80,7 @@
 
     public class LoginResult
     {
-        // Gelen JSON'daki "token" alanını yakalamak için property adı aynı olmalı.
+        
         public string Token { get; set; }
     }
 }

@@ -6,7 +6,7 @@
 @using System.ComponentModel.DataAnnotations
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
-@inject AuthenticationStateProvider AuthenticationStateProvider // UserId almak için
+@inject AuthenticationStateProvider AuthenticationStateProvider 
 
 @if (hotel == null)
 {
@@ -90,20 +90,20 @@ else
 
 @code {
     [Parameter]
-    public int Id { get; set; } // Otel ID'si Route'dan gelir
+    public int Id { get; set; } 
 
-    // Query String'den gelen arama kriterleri
+    
     [SupplyParameterFromQuery] public DateTime? checkIn { get; set; }
     [SupplyParameterFromQuery] public DateTime? checkOut { get; set; }
-    [SupplyParameterFromQuery] public int adults { get; set; } = 1; // Default değerler önemli
+    [SupplyParameterFromQuery] public int adults { get; set; } = 1; 
     [SupplyParameterFromQuery] public int children { get; set; } = 0;
 
     private Hotel? hotel;
-    private ReservationDetails reservationDetails = new(); // Form için model
+    private ReservationDetails reservationDetails = new(); 
     private PriceCalculationResult? calculatedPriceInfo;
     private bool isCalculatingPrice = false;
     private string? priceCalculationError;
-    private string? currentUserId; // Giriş yapan kullanıcının ID'si
+    private string? currentUserId; 
 
   
     public class ReservationDetails
@@ -122,28 +122,27 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        // Önce otel detayını çek
+        
         hotel = await Http.GetFromJsonAsync<Hotel>($"api/hotels/{Id}");
 
-        // Sonra giriş yapan kullanıcının ID'sini al
+        
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         currentUserId = authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
 
-        // Query string'den gelen değerlerle formu başlat
+       
         reservationDetails.CheckInDate = checkIn ?? DateTime.Today;
         reservationDetails.CheckOutDate = checkOut ?? DateTime.Today.AddDays(1);
-        reservationDetails.AdultCount = adults > 0 ? adults : 1; // En az 1 yetişkin
+        reservationDetails.AdultCount = adults > 0 ? adults : 1; 
         reservationDetails.ChildCount = children >= 0 ? children : 0;
 
-        // Sayfa yüklendiğinde ilk fiyatı hesapla
+       
         await CalculatePriceAsync();
     }
 
     private async Task CalculatePriceAsync()
     {
-        // CalculatePriceAsync metodu Reservations.razor'daki ile çok benzer olacak
-        // Sadece currentReservation yerine reservationDetails kullanılır.
+        
 
         if (Id <= 0 || reservationDetails.CheckInDate == default || reservationDetails.CheckOutDate == default || reservationDetails.CheckInDate >= reservationDetails.CheckOutDate || reservationDetails.AdultCount <= 0)
         {
@@ -180,12 +179,12 @@ else
     {
         if (calculatedPriceInfo == null || priceCalculationError != null || string.IsNullOrEmpty(currentUserId))
         {
-            // Kullanıcıya hata göster (örn: alert)
+            
             Console.WriteLine("Fiyat hesaplanamadı veya kullanıcı ID'si alınamadı.");
             return;
         }
 
-        // API'ye göndereceğimiz Reservation nesnesini oluştur
+       
         var newReservation = new Reservation
         {
             GirisTarihi = reservationDetails.CheckInDate,
@@ -194,25 +193,25 @@ else
             CocukSayisi = reservationDetails.ChildCount,
             ToplamFiyat = calculatedPriceInfo.ToplamTutar,
             Aciklama = reservationDetails.Description ?? string.Empty,
-            UserId = int.Parse(currentUserId), // String'i int'e çevir
-            HotelId = Id // Sayfanın parametresinden gelen otel ID'si
+            UserId = int.Parse(currentUserId), 
+            HotelId = Id 
         };
 
-        // API'ye POST isteği gönder
+     
         var response = await Http.PostAsJsonAsync("api/reservations", newReservation);
 
         if (response.IsSuccessStatusCode)
         {
-            // Başarılı olursa kullanıcıyı bilgilendir ve belki başka bir sayfaya yönlendir
+          
             Console.WriteLine("Rezervasyon başarıyla oluşturuldu!");
-            NavigationManager.NavigateTo("/my-reservations"); // Örnek yönlendirme
+            NavigationManager.NavigateTo("/my-reservations"); 
         }
         else
         {
-            // API'den gelen hatayı göster
+           
             var errorMessage = await response.Content.ReadAsStringAsync();
             Console.WriteLine($"Rezervasyon oluşturulamadı: ({response.StatusCode}) {errorMessage}");
-            // Kullanıcıya hata mesajı gösterilebilir (örn: alert)
+          
         }
     }
 }

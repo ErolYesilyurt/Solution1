@@ -55,7 +55,7 @@ namespace Rezervasyon.Api.Controllers
             }
             
                 var token = GenerateJwtToken(user);
-                return Ok(new { token }); // Token'ı client'a JSON olarak gönder
+                return Ok(new { token }); 
             
 
         

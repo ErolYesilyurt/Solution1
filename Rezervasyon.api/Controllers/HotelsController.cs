@@ -10,7 +10,7 @@ namespace Rezervasyon.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // Bu controller'a sadece giriş yapmış kullanıcılar erişebilir
+    [Authorize] 
     public class HotelsController : ControllerBase
     {   private readonly DataContext _context;
 
@@ -22,14 +22,7 @@ namespace Rezervasyon.Api.Controllers
         [HttpGet]
         public IActionResult GetHotels()
         {   
-            // TODO: Bu veriler daha sonra veritabanından gelecek.
-            // Şimdilik test için sabit bir liste döndürüyoruz.
-           /* var hotels = new List<Hotel>
-            {
-                new Hotel { Id = 1, Name = "Grand Park Lara", City = "Antalya", Stars = 5 },
-                new Hotel { Id = 2, Name = "The Marmara Pera", City = "İstanbul", Stars = 4 },
-                new Hotel { Id = 3, Name = "Swissôtel Uludağ", City = "Bursa", Stars = 5 }
-            };*/
+           
 
             var hotels =_context.Oteller.ToList();
 
@@ -75,7 +68,7 @@ namespace Rezervasyon.Api.Controllers
                     Hotel = h,
                     
                     PriceInfo = _context.Prices
-                                    .Include(p => p.Currency) // Para birimini de dahil et
+                                    .Include(p => p.Currency) 
                                     .FirstOrDefault(p => p.HotelId == h.Id &&
                                                            checkIn >= p.GecerlilikBaslangic &&
                                                            checkOut <= p.GecerlilikBitis)

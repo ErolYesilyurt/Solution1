@@ -1,4 +1,4 @@
-﻿// Models/Hotel.cs
+﻿
 namespace Rezervasyon.Api.Models
 {
     public class Hotel
