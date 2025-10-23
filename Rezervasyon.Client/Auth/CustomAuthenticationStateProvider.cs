@@ -88,12 +88,33 @@ namespace Rezervasyon.Client.Auth
                 }
             }
 
-         
-            claims.AddRange(keyValuePairs
+            object idValue;
+      
+            if (keyValuePairs.TryGetValue("nameid", out idValue) || keyValuePairs.TryGetValue(ClaimTypes.NameIdentifier, out idValue))
+            {
+                if (idValue != null)
+                {
+                    
+                    claims.Add(new Claim(ClaimTypes.NameIdentifier, idValue.ToString()));
+                }
+            }
+
+           /* claims.AddRange(keyValuePairs
                 .Where(kvp => kvp.Key != "sub" && kvp.Key != "role")
                 .Select(kvp => new Claim(kvp.Key, kvp.Value.ToString())));
 
             return claims;
+        } */
+
+        claims.AddRange(keyValuePairs
+              
+                .Where(kvp => kvp.Key != "sub" && kvp.Key != ClaimTypes.Name &&
+                              kvp.Key != "role" && kvp.Key != ClaimTypes.Role &&
+                              kvp.Key != "nameid" && kvp.Key != ClaimTypes.NameIdentifier)
+                .Select(kvp => new Claim(kvp.Key, kvp.Value?.ToString() ?? ""))); 
+
+            return claims;
+
         }
 
         private byte[] ParseBase64WithoutPadding(string base64)

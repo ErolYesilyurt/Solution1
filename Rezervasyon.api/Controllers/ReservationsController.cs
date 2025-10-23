@@ -16,8 +16,18 @@ namespace Rezervasyon.Api.Controllers
             _context = context;
         }
         [HttpGet]
-        public IActionResult GetReservations()
-        {   var reservations = _context.Reservations
+        public IActionResult GetReservations([FromQuery] int? id=null)
+        {   if(id != null)
+                {
+                var reservation = _context.Reservations
+                    .Include(x => x.Hotel)
+                    .Include(x => x.User)
+                    .FirstOrDefault(x => x.Id == id);
+                if (reservation == null)
+                    return NotFound();
+                return Ok(reservation);
+            }
+            var reservations = _context.Reservations
                 .Include(x=> x.Hotel)
                 .Include(x=> x.User).ToList();
             return Ok(reservations);
