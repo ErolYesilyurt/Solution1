@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Rezervasyon.Api.Data;
 using Rezervasyon.Api.Models;
 
+
 namespace Rezervasyon.Api.Controllers
 {
     [Route("api/[controller]")]
@@ -82,6 +83,16 @@ namespace Rezervasyon.Api.Controllers
             return NoContent();
 
 
+        }
+
+        [HttpGet("forUser/{UserId}")]
+        
+        public async Task<ActionResult<IEnumerable<Reservation>>> GetReservationsForUser(int UserId)
+        {
+            return await _context.Reservations
+                .Where(p => p.UserId == UserId)
+                .Include(p => p.Hotel)
+                .ToListAsync();
         }
 
     }

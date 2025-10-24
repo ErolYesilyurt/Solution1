@@ -1,15 +1,17 @@
 ﻿@page "/reservations"
-@attribute [Authorize(Roles = "Admin")]
+@attribute [Authorize]
 @using Rezervasyon.Client.Models
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthStateProvider
+
 
 <PageTitle>Rezervasyon Yönetimi</PageTitle>
 
 <h3>Rezervasyon Yönetimi</h3>
-
+<AuthorizeView Roles="Admin">
 <button class="btn btn-primary mb-3" @onclick="OpenAddModal">Yeni Rezervasyon Ekle</button>
-
+</AuthorizeView>
 @if (reservations == null)
 {
     <p><em>Rezervasyonlar yükleniyor...</em></p>
@@ -20,11 +22,18 @@ else
         <thead>
             <tr>
                 <th>Otel</th>
+                <AuthorizeView Roles="Admin">
                 <th>Kullanıcı</th>
+				</AuthorizeView>
                 <th>Giriş Tarihi</th>
                 <th>Çıkış Tarihi</th>
                 <th>Toplam Fiyat</th>
+                <AuthorizeView Roles="Admin">
                 <th>İşlemler</th>
+				</AuthorizeView>
+                <AuthorizeView Roles="User">
+					<th></th>
+				</AuthorizeView>
             </tr>
         </thead>
         <tbody>
@@ -32,14 +41,23 @@ else
             {
                 <tr>
                     <td>@reservation.Hotel?.Name</td>
+                    <AuthorizeView Roles="Admin">
                     <td>@reservation.User?.Username</td>
+					</AuthorizeView>
                     <td>@reservation.GirisTarihi.ToShortDateString()</td>
                     <td>@reservation.CikisTarihi.ToShortDateString()</td>
                     <td>@reservation.ToplamFiyat.ToString("N2")</td>
+                     <AuthorizeView Roles="Admin">
                     <td>
                         <button class="btn btn-warning btn-sm" @onclick="() => OpenEditModal(reservation)">Düzenle</button>
                         <button class="btn btn-danger btn-sm" @onclick="() => DeleteReservation(reservation.Id)">Sil</button>
                     </td>
+                    </AuthorizeView>
+					<AuthorizeView Roles="User">
+                    <td>
+                        <button class="btn btn-warning btn-sm" @onclick="() => OpenEditModal(reservation)">Detaylar</button>
+                    </td>
+					</AuthorizeView>
                 </tr>
             }
         </tbody>
@@ -52,7 +70,7 @@ else
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">@(isEditMode ? "Rezervasyonu Düzenle" : "Yeni Rezervasyon Ekle")</h5>
+                    <h5 class="modal-title">@(!isCurrentUserAdmin ? "Rezervasyon Detayları" : (isEditMode ? "Rezervasyonu Düzenle" : "Yeni Rezervasyon Ekle"))</h5>
                     <button type="button" class="btn-close" @onclick="CloseModal"></button>
                 </div>
                 <div class="modal-body">
@@ -63,7 +81,7 @@ else
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Otel</label>
-                                    <InputSelect class="form-select" @bind-Value="currentReservation.HotelId" @bind-Value:after="CalculatePriceAsync">
+                                    <InputSelect class="form-select" @bind-Value="currentReservation.HotelId" @bind-Value:after="CalculatePriceAsync" disabled="@(!isCurrentUserAdmin)">
                                         <option value="0">-- Otel Seçin --</option>
                                         @if (allHotels != null)
                                         {
@@ -75,7 +93,7 @@ else
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Kullanıcı</label>
-                                    <InputSelect class="form-select" @bind-Value="currentReservation.UserId">
+                                    <InputSelect class="form-select" @bind-Value="currentReservation.UserId" disabled="@(!isCurrentUserAdmin)">
                                         <option value="0">-- Kullanıcı Seçin --</option>
                                         @if (allUsers != null)
                                         {
@@ -87,19 +105,19 @@ else
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Giriş Tarihi</label>
-                                    <InputDate class="form-control" @bind-Value="currentReservation.GirisTarihi" @bind-Value:after="CalculatePriceAsync" />
+                                    <InputDate class="form-control" @bind-Value="currentReservation.GirisTarihi" @bind-Value:after="CalculatePriceAsync" disabled="@(!isCurrentUserAdmin)" />
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Çıkış Tarihi</label>
-                                    <InputDate class="form-control" @bind-Value="currentReservation.CikisTarihi" @bind-Value:after="CalculatePriceAsync" />
+                                    <InputDate class="form-control" @bind-Value="currentReservation.CikisTarihi" @bind-Value:after="CalculatePriceAsync" disabled="@(!isCurrentUserAdmin)" />
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Yetişkin Sayısı</label>
-                                    <InputNumber class="form-control" @bind-Value="currentReservation.YetiskinSayisi" @bind-Value:after="CalculatePriceAsync" />
+                                    <InputNumber class="form-control" @bind-Value="currentReservation.YetiskinSayisi" @bind-Value:after="CalculatePriceAsync" disabled="@(!isCurrentUserAdmin)" />
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Çocuk Sayısı</label>
-                                    <InputNumber class="form-control" @bind-Value="currentReservation.CocukSayisi" @bind-Value:after="CalculatePriceAsync" />
+                                    <InputNumber class="form-control" @bind-Value="currentReservation.CocukSayisi" @bind-Value:after="CalculatePriceAsync" disabled="@(!isCurrentUserAdmin)" />
                                 </div>
 
                                 <div class="col-12 mb-3">
@@ -130,12 +148,16 @@ else
                                 </div>
                                 <div class="col-12 mb-3">
                                     <label class="form-label">Açıklama</label>
-                                    <InputTextArea class="form-control" @bind-Value="currentReservation.Aciklama" />
+                                    <InputTextArea class="form-control" @bind-Value="currentReservation.Aciklama" disabled="@(!isCurrentUserAdmin)" />
                                 </div>
                             </div>
                             <div class="modal-footer">
+                                @if (isCurrentUserAdmin)
+                                {
                                 <button type="button" class="btn btn-secondary" @onclick="CloseModal">İptal</button>
+                                
                                 <button type="submit" class="btn btn-primary" disabled="@isCalculatingPrice">Kaydet</button>
+                                }
                             </div>
                         </EditForm>
                     }
@@ -147,9 +169,14 @@ else
 }
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
     private List<Reservation>? reservations;
     private List<Hotel>? allHotels;
     private List<User>? allUsers;
+
+    private int? currentUserId = null;
+    private bool isCurrentUserAdmin = false;
 
     private bool isModalVisible = false;
     private bool isEditMode = false;
@@ -163,19 +190,63 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        isCurrentUserAdmin = authState.User.IsInRole("Admin");
+
+        var userIdString = user.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (userIdString != null && int.TryParse(userIdString, out int parsedId))
+        {
+            currentUserId = parsedId; 
+        }
         await LoadInitialData();
     }
 
     private async Task LoadInitialData()
     {
-        reservations = await Http.GetFromJsonAsync<List<Reservation>>("api/reservations");
+        ReloadReservations();
+        //reservations = await Http.GetFromJsonAsync<List<Reservation>>("api/reservations");
         allHotels = await Http.GetFromJsonAsync<List<Hotel>>("api/hotels");
         allUsers = await Http.GetFromJsonAsync<List<User>>("api/users");
     }
 
     private async Task ReloadReservations()
     {
-        reservations = await Http.GetFromJsonAsync<List<Reservation>>("api/reservations");
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+      
+        reservations = null;
+        StateHasChanged();
+
+        string apiUrl; 
+
+    
+        if (isCurrentUserAdmin)
+        {
+           
+            apiUrl = "api/reservations";
+            reservations = await Http.GetFromJsonAsync<List<Reservation>>(apiUrl);
+           
+        }
+        else
+        {
+          
+            apiUrl = $"api/reservations/forUser/{currentUserId.Value}";
+            reservations = await Http.GetFromJsonAsync<List<Reservation>>(apiUrl);
+			Console.WriteLine("user ıdentıty" + user.Identity);
+        }
+
+  
+        
+           
+        
+       
+            
+            
+        
+       
+            StateHasChanged(); 
+        
     }
 
     private void OpenAddModal()
@@ -303,5 +374,6 @@ else
 
         var response = await Http.DeleteAsync($"api/reservations/{id}");
         await ReloadReservations();
+
     }
 }
