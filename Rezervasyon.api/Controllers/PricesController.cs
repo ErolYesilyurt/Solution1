@@ -31,7 +31,7 @@ namespace Rezervasyon.Api.Controllers
 
         
         [HttpGet("forHotel/{hotelId}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Worker")]
         public async Task<ActionResult<IEnumerable<Price>>> GetPricesForHotel(int hotelId)
         {
             return await _context.Prices
@@ -86,7 +86,7 @@ namespace Rezervasyon.Api.Controllers
 
         
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Worker")]
         public async Task<ActionResult<Price>> GetPriceById(int id)
         {
             var price = await _context.Prices.FindAsync(id);

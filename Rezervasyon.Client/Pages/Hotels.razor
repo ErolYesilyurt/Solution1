@@ -1,5 +1,5 @@
 ﻿@page "/hotels"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin,Worker")]
 @using Rezervasyon.Client.Models
 @inject HttpClient Http
 

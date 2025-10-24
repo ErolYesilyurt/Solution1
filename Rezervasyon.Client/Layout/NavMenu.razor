@@ -19,17 +19,21 @@
                 <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
             </NavLink>
         </div>
+        <AuthorizeView Roles="Admin,Worker">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="hotels">
                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Oteller
             </NavLink>
         </div>
+        </AuthorizeView>
+        <AuthorizeView Roles="Admin,Worker">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="currencies">
                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Currencies
             </NavLink>
         </div>
-        <AuthorizeView Roles="Admin">
+        </AuthorizeView>
+        <AuthorizeView Roles="Admin,Worker">
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="manage-prices">
                     <span class="bi bi-currency-dollar-nav-menu" aria-hidden="true"></span> Fiyat Yönetimi

@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "Rezervasyon.Client",
   "resources": {
-    "hash": "sha256-zmW1fN7kBAeWI3v6jYkfTsinr873y1DDYv4yOKNrQ6s=",
+    "hash": "sha256-Ig222k+akvghuojvPGWbUInGaW6WqraTcpdJphcPc/M=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-D0bzod5lwwSzPR43JC8TTCcZKw+3jIHOk8CZFCRj5is="
     },
@@ -217,10 +217,10 @@
       "mscorlib.wasm": "sha256-8qWtIcy8fV43tlcx4DxsF45RlkcfK6588vVoxF7be2E=",
       "netstandard.wasm": "sha256-eOgz2RiO4YaPLOMIGgVLNrcfsQhmLQJzR0N7Pu2teXc=",
       "System.Private.CoreLib.wasm": "sha256-F8T63QCIbMPXPQPqTcuyBAw+oVvZSrWjy88j7fiJQZ4=",
-      "Rezervasyon.Client.wasm": "sha256-yoh4Sqw6gwi6YOI9bmgrz2u960bmAWGM13YfZIPmZZ4="
+      "Rezervasyon.Client.wasm": "sha256-b8UxtGDF2nzzKtbley4pmM1Occoi94aSX7VDRfxDCcA="
     },
     "pdb": {
-      "Rezervasyon.Client.pdb": "sha256-UC1lc0JWRIAeS6q5V+5voA1vEyvk/QowJn0u57Ydysg="
+      "Rezervasyon.Client.pdb": "sha256-wwLbDkmdY5IbX/ioEzxQC48LZ3lIjKTMZBE4oYrfSO4="
     }
   },
   "cacheBootResources": true,

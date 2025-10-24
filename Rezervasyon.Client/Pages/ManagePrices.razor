@@ -1,5 +1,5 @@
 ﻿@page "/manage-prices"
-@attribute [Authorize(Roles = "Admin")]
+@attribute [Authorize(Roles = "Admin,Worker")]
 @using Rezervasyon.Client.Models
 @inject HttpClient Http
 
@@ -22,8 +22,9 @@
 </div>
 
 @if (selectedHotelId > 0)
-{
+{   <AuthorizeView Roles="Admin">
     <button class="btn btn-primary mb-3" @onclick="OpenAddModal">Yeni Fiyat Ekle</button>
+    </AuthorizeView>
     @if(isModalvisible)
     {
 
@@ -110,10 +111,12 @@
                         <td>@price.Amount.ToString("N2") @price.Currency.Code</td>
                         <td>@price.GecerlilikBaslangic.ToShortDateString()</td>
                         <td>@price.GecerlilikBitis.ToShortDateString()</td>
+                        <AuthorizeView roles="Admin">
                         <td>
                             <button class="btn btn-warning btn-sm" @onclick="() => OpenEditMOdal(price)">Düzenle</button>
                             <button class="btn btn-danger btn-sm" @onclick="() => DeletePrice(price.Id)">Sil</button>
                         </td>
+                        </AuthorizeView>
                     </tr>
                 }
             </tbody>
