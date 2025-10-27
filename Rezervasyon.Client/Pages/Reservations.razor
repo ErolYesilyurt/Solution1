@@ -42,7 +42,10 @@ else
                 <tr>
                     <td>@reservation.Hotel?.Name</td>
                     <AuthorizeView Roles="Admin">
-                    <td>@reservation.User?.Username</td>
+                        @if(reservation.UserId != null)
+                   { <td>@reservation.User?.Username</td>}
+                    else 
+                   { <td>@reservation.KisiAdSoyad</td>}
 					</AuthorizeView>
                     <td>@reservation.GirisTarihi.ToShortDateString()</td>
                     <td>@reservation.CikisTarihi.ToShortDateString()</td>
@@ -92,16 +95,8 @@ else
                                     </InputSelect>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Kullanıcı</label>
-                                    <InputSelect class="form-select" @bind-Value="currentReservation.UserId" disabled="@(!isCurrentUserAdmin)">
-                                        <option value="0">-- Kullanıcı Seçin --</option>
-                                        @if (allUsers != null)
-                                        {
-                                            @foreach(var user in allUsers) {
-                                                <option value="@user.Id">@user.Username</option>
-                                            }
-         }
-                                    </InputSelect>
+                                    <label class="form-label">Ad Soyad</label>
+                                    <InputTextArea class="form-control" @bind-Value="currentReservation.KisiAdSoyad" rows="1" disabled="@(!isCurrentUserAdmin)" />
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Giriş Tarihi</label>

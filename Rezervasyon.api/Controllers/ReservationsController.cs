@@ -40,6 +40,17 @@ namespace Rezervasyon.Api.Controllers
             if (reservation == null)
                 return BadRequest();
 
+            bool isStopSaleActive = await _context.StopSales
+            .AnyAsync(ss => ss.HotelId == reservation.HotelId &&
+                            reservation.GirisTarihi < ss.BitisTarihi &&
+                            reservation.CikisTarihi > ss.BaslangicTarihi);
+
+            if (isStopSaleActive)
+            {
+              
+                return BadRequest("Seçilen tarihlerde otel rezervasyona kapalıdır (Stop Sale).");
+            }
+
             _context.Reservations.Add(reservation);
 
             await _context.SaveChangesAsync();

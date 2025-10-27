@@ -21,10 +21,10 @@ namespace Rezervasyon.Client.Models
 
         public string Aciklama { get; set; }
 
-        public int UserId { get; set; }
-        public virtual User User { get; set; }
+        public int? UserId { get; set; }
+        public virtual User? User { get; set; }
 
-
+        public string? KisiAdSoyad { get; set; }
         public int HotelId { get; set; }
         public virtual Hotel Hotel { get; set; }
     }

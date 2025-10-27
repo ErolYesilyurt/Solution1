@@ -12,7 +12,7 @@ using Rezervasyon.Api.Data;
 namespace Rezervasyon.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20251020075647_asd")]
+    [Migration("20251027081325_asd")]
     partial class asd
     {
         /// <inheritdoc />
@@ -126,10 +126,13 @@ namespace Rezervasyon.Api.Migrations
                     b.Property<int>("HotelId")
                         .HasColumnType("int");
 
+                    b.Property<string>("KisiAdSoyad")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("ToplamFiyat")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.Property<int>("YetiskinSayisi")
@@ -144,6 +147,33 @@ namespace Rezervasyon.Api.Migrations
                     b.ToTable("Reservations");
                 });
 
+            modelBuilder.Entity("Rezervasyon.Api.Models.StopSale", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Aciklama")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("BaslangicTarihi")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("BitisTarihi")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("HotelId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HotelId");
+
+                    b.ToTable("StopSales");
+                });
+
             modelBuilder.Entity("Rezervasyon.Api.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -151,6 +181,14 @@ namespace Rezervasyon.Api.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<byte[]>("PasswordHash")
                         .IsRequired()
@@ -202,13 +240,22 @@ namespace Rezervasyon.Api.Migrations
 
                     b.HasOne("Rezervasyon.Api.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Hotel");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Rezervasyon.Api.Models.StopSale", b =>
+                {
+                    b.HasOne("Rezervasyon.Api.Models.Hotel", "Hotel")
+                        .WithMany()
+                        .HasForeignKey("HotelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Hotel");
                 });
 #pragma warning restore 612, 618
         }

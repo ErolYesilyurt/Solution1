@@ -21,11 +21,11 @@ namespace Rezervasyon.Api.Models
 
         public string Aciklama { get; set; } 
 
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
         [ValidateNever]
-        public virtual User User { get; set; }
+        public virtual User? User { get; set; }
 
-       
+        public string? KisiAdSoyad { get; set; }
         public int HotelId { get; set; }
         [ValidateNever]
         public virtual Hotel Hotel { get; set; }

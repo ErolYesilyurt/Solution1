@@ -60,7 +60,10 @@ namespace Rezervasyon.Api.Controllers
         .Where(h => _context.Reservations
                           .Count(r => r.HotelId == h.Id &&
                                       checkIn < r.CikisTarihi &&
-                                      checkOut > r.GirisTarihi) < 5);
+                                      checkOut > r.GirisTarihi) < 5)
+        .Where(h => !_context.StopSales.Any(ss => ss.HotelId == h.Id &&
+                                                   checkIn < ss.BitisTarihi &&
+                                                   checkOut > ss.BaslangicTarihi));
 
             var potentialHotels = await query
                 .Select(h => new 
