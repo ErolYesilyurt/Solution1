@@ -1,8 +1,8 @@
 ﻿@page "/hotel/{Id:int}"
 @attribute [Authorize]
-@using Microsoft.AspNetCore.Components // [SupplyParameterFromQuery] için
-@using System.Security.Claims // UserId almak için
-@using Rezervasyon.Client.Models // Veya Dtos
+@using Microsoft.AspNetCore.Components 
+@using System.Security.Claims 
+@using Rezervasyon.Client.Models 
 @using System.ComponentModel.DataAnnotations
 @inject HttpClient Http
 @inject NavigationManager NavigationManager

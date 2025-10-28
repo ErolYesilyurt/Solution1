@@ -1135,6 +1135,10 @@
             "type": "string",
             "format": "date-time"
           },
+          "maxGuests": {
+            "type": "integer",
+            "format": "int32"
+          },
           "hotelId": {
             "type": "integer",
             "format": "int32"

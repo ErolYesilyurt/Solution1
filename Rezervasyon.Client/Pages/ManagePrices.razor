@@ -45,6 +45,7 @@
                         <label>Tutar</label>
                         <InputNumber class="form-control" @bind-Value="currentPrice.Amount" />
                     </div>
+                         
                     <div class="col-md-6">
                         <label>Para Birimi</label>
                         <InputSelect class="form-select" @bind-Value="currentPrice.CurrencyId">
@@ -58,6 +59,7 @@
                             }
                         </InputSelect>
                     </div>
+                    
                     <div class="col-md-6">
                         <label>Geçerlilik Başlangıcı</label>
                         <InputDate class="form-control" @bind-Value="currentPrice.GecerlilikBaslangic" />
@@ -66,6 +68,10 @@
                         <label>Geçerlilik Bitişi</label>
                         <InputDate class="form-control" @bind-Value="currentPrice.GecerlilikBitis" />
                     </div>
+                                <div class="col-md-6">
+                                    <label>Misafir Sınırı</label>
+                                    <InputNumber class="form-control" @bind-Value="currentPrice.MaxGuests" />
+                                </div>
                 </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" @onclick="CloseModal">İptal</button>
@@ -99,6 +105,7 @@
                     <th>Tutar</th>
                     <th>Başlangıç</th>
                     <th>Bitiş</th>
+                    <th>Kapasite</th>
                     <AuthorizeView roles="Admin">
                         <th>İşlemler</th>
                     </AuthorizeView>
@@ -111,6 +118,7 @@
                         <td>@price.Amount.ToString("N2") @price.Currency.Code</td>
                         <td>@price.GecerlilikBaslangic.ToShortDateString()</td>
                         <td>@price.GecerlilikBitis.ToShortDateString()</td>
+						<td>@price.MaxGuests</td>
                         <AuthorizeView roles="Admin">
                         <td>
                             <button class="btn btn-warning btn-sm" @onclick="() => OpenEditMOdal(price)">Düzenle</button>
@@ -232,6 +240,7 @@
                 CurrencyId = price.CurrencyId,
                 GecerlilikBaslangic = price.GecerlilikBaslangic,
                 GecerlilikBitis = price.GecerlilikBitis,
+			    MaxGuests = price.MaxGuests,
                 Id = price.Id
 
             };

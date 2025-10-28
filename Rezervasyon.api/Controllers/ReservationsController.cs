@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Rezervasyon.Api.Data;
@@ -51,6 +52,28 @@ namespace Rezervasyon.Api.Controllers
                 return BadRequest("Seçilen tarihlerde otel rezervasyona kapalıdır (Stop Sale).");
             }
 
+            int totalGuestsInReservation = reservation.YetiskinSayisi + reservation.CocukSayisi;
+
+           
+            var applicablePrice = await _context.Prices
+                .FirstOrDefaultAsync(p => p.HotelId == reservation.HotelId &&
+                                           reservation.GirisTarihi >= p.GecerlilikBaslangic &&
+                                           reservation.CikisTarihi <= p.GecerlilikBitis);
+
+          
+            if (applicablePrice == null)
+            {
+                return BadRequest($"Seçilen otel/tarihler için geçerli bir fiyat tanımı bulunamadı.");
+            }
+
+           
+            if (totalGuestsInReservation > applicablePrice.MaxGuests) 
+            {
+                
+                return BadRequest($"Kişi sayısı ({totalGuestsInReservation}), bu oda/fiyat için izin verilen maksimum kapasiteyi ({applicablePrice.MaxGuests}) aşıyor.");
+            }
+            applicablePrice.MaxGuests -= totalGuestsInReservation;
+            _context.Entry(applicablePrice).State = EntityState.Modified;
             _context.Reservations.Add(reservation);
 
             await _context.SaveChangesAsync();

@@ -55,7 +55,9 @@ namespace Rezervasyon.Api.Controllers
       
         .Where(h => _context.Prices.Any(p => p.HotelId == h.Id &&
                                                checkIn >= p.GecerlilikBaslangic &&
-                                               checkOut <= p.GecerlilikBitis))
+                                               checkOut <= p.GecerlilikBitis
+                                               && 
+                                               p.MaxGuests-(adults+children)>0))
 
         .Where(h => _context.Reservations
                           .Count(r => r.HotelId == h.Id &&
@@ -100,6 +102,8 @@ namespace Rezervasyon.Api.Controllers
                     Console.WriteLine($"Uyarı: Otel ID {item.Hotel.Id} için fiyat matrisi dışında kalan kişi sayısı ({adults},{children}). Atlanıyor.");
                     continue; 
                 }
+
+
 
                
                 decimal calculatedNightlyRate = priceMatrix[adultIndex][childIndex]*baseAmount; 

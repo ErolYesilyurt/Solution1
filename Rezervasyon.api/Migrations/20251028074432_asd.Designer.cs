@@ -12,7 +12,7 @@ using Rezervasyon.Api.Data;
 namespace Rezervasyon.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20251027081325_asd")]
+    [Migration("20251028074432_asd")]
     partial class asd
     {
         /// <inheritdoc />
@@ -91,6 +91,9 @@ namespace Rezervasyon.Api.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int>("HotelId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxGuests")
                         .HasColumnType("int");
 
                     b.HasKey("Id");

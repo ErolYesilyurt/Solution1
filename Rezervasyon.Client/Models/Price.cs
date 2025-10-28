@@ -1,6 +1,7 @@
 ﻿using Rezervasyon.Client.Models;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 
 namespace Rezervasyon.Client.Models
 {
@@ -13,9 +14,9 @@ namespace Rezervasyon.Client.Models
 
         
         public DateTime GecerlilikBaslangic { get; set; } 
-        public DateTime GecerlilikBitis { get; set; }   
-
-
+        public DateTime GecerlilikBitis { get; set; }
+        
+        public int MaxGuests { get; set; }
 
 
         public int HotelId { get; set; }

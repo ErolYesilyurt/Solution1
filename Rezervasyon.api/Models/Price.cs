@@ -12,11 +12,11 @@ namespace Rezervasyon.Api.Models
 
        
         public DateTime GecerlilikBaslangic { get; set; } 
-        public DateTime GecerlilikBitis { get; set; } 
+        public DateTime GecerlilikBitis { get; set; }
 
-        
+        public int MaxGuests { get; set; }
 
-     
+
         public int HotelId { get; set; }
         [ValidateNever]
         public virtual Hotel Hotel { get; set; }
