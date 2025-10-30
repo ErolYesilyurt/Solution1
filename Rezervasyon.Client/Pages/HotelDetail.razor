@@ -34,21 +34,25 @@ else
                     <EditForm Model="reservationDetails" OnValidSubmit="HandleReservation">
                         <DataAnnotationsValidator />
                         <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Kişi Ad Soyad</label>
+                                <InputTextArea class="form-control" @bind-Value="reservationDetails.KisiAdSoyad" rows="1" @bind-Value:after="CalculatePriceAsync" />
+                            </div>
                             <div class="col-6">
                                 <label class="form-label">Giriş Tarihi</label>
-                                <InputDate class="form-control" @bind-Value="reservationDetails.CheckInDate" @bind-Value:after="CalculatePriceAsync" />
+                                <InputDate class="form-control" @bind-Value="reservationDetails.GirisTarihi" @bind-Value:after="CalculatePriceAsync" />
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Çıkış Tarihi</label>
-                                <InputDate class="form-control" @bind-Value="reservationDetails.CheckOutDate" @bind-Value:after="CalculatePriceAsync" />
+                                <InputDate class="form-control" @bind-Value="reservationDetails.CikisTarihi" @bind-Value:after="CalculatePriceAsync" />
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Yetişkin</label>
-                                <InputNumber class="form-control" @bind-Value="reservationDetails.AdultCount" @bind-Value:after="CalculatePriceAsync" />
+                                <InputNumber class="form-control" @bind-Value="reservationDetails.YetiskinSayisi" @bind-Value:after="CalculatePriceAsync" />
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Çocuk</label>
-                                <InputNumber class="form-control" @bind-Value="reservationDetails.ChildCount" @bind-Value:after="CalculatePriceAsync" />
+                                <InputNumber class="form-control" @bind-Value="reservationDetails.CocukSayisi" @bind-Value:after="CalculatePriceAsync" />
                             </div>
 
                             <div class="col-12 mt-3">
@@ -75,7 +79,7 @@ else
                             </div>
                             <div class="col-12">
                                 <label class="form-label">Açıklama (İsteğe Bağlı)</label>
-                                <InputTextArea class="form-control" @bind-Value="reservationDetails.Description" />
+                                <InputTextArea class="form-control" @bind-Value="reservationDetails.Aciklama" />
                             </div>
                         </div>
                         <button type="submit" class="btn btn-success w-100 mt-3" disabled="@(isCalculatingPrice || calculatedPriceInfo == null)">
@@ -99,26 +103,14 @@ else
     [SupplyParameterFromQuery] public int children { get; set; } = 0;
 
     private Hotel? hotel;
-    private ReservationDetails reservationDetails = new(); 
+    private Reservation reservationDetails = new(); 
     private PriceCalculationResult? calculatedPriceInfo;
     private bool isCalculatingPrice = false;
     private string? priceCalculationError;
     private string? currentUserId; 
 
   
-    public class ReservationDetails
-    {
-        [Required]
-        public DateTime CheckInDate { get; set; }
-        [Required]
-        public DateTime CheckOutDate { get; set; }
-        [Range(1, 10)]
-        public int AdultCount { get; set; }
-        [Range(0, 10)]
-        public int ChildCount { get; set; }
-        public string? Description { get; set; }
-       
-    }
+   
 
     protected override async Task OnInitializedAsync()
     {
@@ -131,10 +123,10 @@ else
 
 
        
-        reservationDetails.CheckInDate = checkIn ?? DateTime.Today;
-        reservationDetails.CheckOutDate = checkOut ?? DateTime.Today.AddDays(1);
-        reservationDetails.AdultCount = adults > 0 ? adults : 1; 
-        reservationDetails.ChildCount = children >= 0 ? children : 0;
+        reservationDetails.GirisTarihi = checkIn ?? DateTime.Today;
+        reservationDetails.CikisTarihi = checkOut ?? DateTime.Today.AddDays(1);
+        reservationDetails.YetiskinSayisi = adults > 0 ? adults : 1; 
+        reservationDetails.CocukSayisi = children >= 0 ? children : 0;
 
        
         await CalculatePriceAsync();
@@ -144,7 +136,7 @@ else
     {
         
 
-        if (Id <= 0 || reservationDetails.CheckInDate == default || reservationDetails.CheckOutDate == default || reservationDetails.CheckInDate >= reservationDetails.CheckOutDate || reservationDetails.AdultCount <= 0)
+        if (Id <= 0 || reservationDetails.GirisTarihi == default || reservationDetails.CikisTarihi == default || reservationDetails.GirisTarihi >= reservationDetails.CikisTarihi || reservationDetails.YetiskinSayisi <= 0)
         {
             calculatedPriceInfo = null;
             priceCalculationError = "Lütfen geçerli tarih aralığı ve en az 1 yetişkin seçin.";
@@ -159,7 +151,7 @@ else
 
         try
         { 
-            string requestUri = $"api/prices/calculate?hotelId={Id}&giris={reservationDetails.CheckInDate:yyyy-MM-dd}&cikis={reservationDetails.CheckOutDate:yyyy-MM-dd}&yetiskinsayisi={reservationDetails.AdultCount}&cocuksayisi={reservationDetails.ChildCount}";
+            string requestUri = $"api/prices/calculate?hotelId={Id}&giris={reservationDetails.GirisTarihi:yyyy-MM-dd}&cikis={reservationDetails.CikisTarihi:yyyy-MM-dd}&yetiskinsayisi={reservationDetails.YetiskinSayisi}&cocuksayisi={reservationDetails.CocukSayisi}";
             var response = await Http.GetAsync(requestUri);
 
             if (response.IsSuccessStatusCode)
@@ -187,12 +179,13 @@ else
        
         var newReservation = new Reservation
         {
-            GirisTarihi = reservationDetails.CheckInDate,
-            CikisTarihi = reservationDetails.CheckOutDate,
-            YetiskinSayisi = reservationDetails.AdultCount,
-            CocukSayisi = reservationDetails.ChildCount,
+			KisiAdSoyad = reservationDetails.KisiAdSoyad,
+            GirisTarihi = reservationDetails.GirisTarihi,
+            CikisTarihi = reservationDetails.CikisTarihi,
+            YetiskinSayisi = reservationDetails.YetiskinSayisi,
+            CocukSayisi = reservationDetails.CocukSayisi,
             ToplamFiyat = calculatedPriceInfo.ToplamTutar,
-            Aciklama = reservationDetails.Description ?? string.Empty,
+            Aciklama = reservationDetails.Aciklama ?? string.Empty,
             UserId = int.Parse(currentUserId), 
             HotelId = Id 
         };

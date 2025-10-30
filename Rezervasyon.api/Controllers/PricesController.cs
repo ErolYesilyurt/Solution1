@@ -57,7 +57,8 @@ namespace Rezervasyon.Api.Controllers
             var priceInfo = await _context.Prices
                 .FirstOrDefaultAsync(p => p.HotelId == hotelId &&
                                            giris >= p.GecerlilikBaslangic &&
-                                           cikis <= p.GecerlilikBitis);
+                                           cikis <= p.GecerlilikBitis &&
+                                           p.MaxGuests-(YetiskinSayisi+CocukSayisi)>=0);
 
             if (priceInfo == null)
             {

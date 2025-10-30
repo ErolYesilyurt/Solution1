@@ -58,7 +58,8 @@ namespace Rezervasyon.Api.Controllers
             var applicablePrice = await _context.Prices
                 .FirstOrDefaultAsync(p => p.HotelId == reservation.HotelId &&
                                            reservation.GirisTarihi >= p.GecerlilikBaslangic &&
-                                           reservation.CikisTarihi <= p.GecerlilikBitis);
+                                           reservation.CikisTarihi <= p.GecerlilikBitis &&
+                                           p.MaxGuests-(reservation.YetiskinSayisi+reservation.CocukSayisi)>=0);
 
           
             if (applicablePrice == null)

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Rezervasyon.Client")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+79b03cac5cf5378bf4ea98c1c8e121730c83af2e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a33767dbc19ee5ab6098db7539e34c59a6ec15cd")]
 [assembly: System.Reflection.AssemblyProductAttribute("Rezervasyon.Client")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Rezervasyon.Client")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

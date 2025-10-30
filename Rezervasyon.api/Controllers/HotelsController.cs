@@ -57,7 +57,7 @@ namespace Rezervasyon.Api.Controllers
                                                checkIn >= p.GecerlilikBaslangic &&
                                                checkOut <= p.GecerlilikBitis
                                                && 
-                                               p.MaxGuests-(adults+children)>0))
+                                               p.MaxGuests-(adults+children)>=0))
 
         .Where(h => _context.Reservations
                           .Count(r => r.HotelId == h.Id &&
@@ -76,7 +76,8 @@ namespace Rezervasyon.Api.Controllers
                                     .Include(p => p.Currency) 
                                     .FirstOrDefault(p => p.HotelId == h.Id &&
                                                            checkIn >= p.GecerlilikBaslangic &&
-                                                           checkOut <= p.GecerlilikBitis)
+                                                           checkOut <= p.GecerlilikBitis &&
+                                                           p.MaxGuests - (adults + children) >= 0)
                 })
                 .ToListAsync();
 
