@@ -1,0 +1,58 @@
+﻿## Visual Studio / .NET Gitignore
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+bld/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache/options
+.vs/
+Generated\ Files/
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# Files built by Visual Studio
+*.obj
+*.pdb
+*.ilk
+*.tmp
+*.log
+*.vspscc
+*.vssscc
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+
+# Environment and secrets
+.env
+.env.*
+*.env
+*.env.local
+
+# Local appsettings & development config
+appsettings.Development.json
+appsettings.Local.json
+*.local.json
+
+# VS Code
+.vscode/

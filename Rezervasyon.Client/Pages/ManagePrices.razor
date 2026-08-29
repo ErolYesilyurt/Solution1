@@ -1,0 +1,251 @@
+﻿@page "/manage-prices"
+@attribute [Authorize(Roles = "Admin,Worker")]
+@using Rezervasyon.Client.Models
+@inject HttpClient Http
+
+<PageTitle>Fiyat Yönetimi</PageTitle>
+
+<h3>Fiyat Yönetimi</h3>
+
+<div class="mb-3">
+    <label for="hotel-select" class="form-label">Fiyatlarını Yönetmek İstediğiniz Oteli Seçin:</label>
+    <InputSelect id="hotel-select" class="form-select" @bind-Value="selectedHotelId" @bind-Value:after="LoadPricesForSelectedHotel">
+        <option value="0" disabled>-- Bir otel seçin --</option>
+        @if (allHotels != null)
+        {
+            @foreach (var hotel in allHotels)
+            {
+                <option value="@hotel.Id">@hotel.Name</option>
+            }
+        }
+    </InputSelect>
+</div>
+
+@if (selectedHotelId > 0)
+{   <AuthorizeView Roles="Admin">
+    <button class="btn btn-primary mb-3" @onclick="OpenAddModal">Yeni Fiyat Ekle</button>
+    </AuthorizeView>
+    @if(isModalvisible)
+    {
+
+    <div class="modal fade show" tabindex="-1" style="display: block;" role="dialog">
+     <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">@(isEditMode ? "Rezervasyonu Düzenle" : "Yeni Rezervasyon Ekle")</h5>
+                        <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                    </div>
+                    <div class="modal-body">
+
+            <EditForm Model="currentPrice" OnValidSubmit="HandleSave">
+                <DataAnnotationsValidator />
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label>Tutar</label>
+                        <InputNumber class="form-control" @bind-Value="currentPrice.Amount" />
+                    </div>
+                         
+                    <div class="col-md-6">
+                        <label>Para Birimi</label>
+                        <InputSelect class="form-select" @bind-Value="currentPrice.CurrencyId">
+                            <option value="0" disabled>-- Seçin --</option>
+                            @if (allCurrencies != null)
+                            {
+                                @foreach (var currency in allCurrencies)
+                                {
+                                    <option value="@currency.Id">@currency.Code</option>
+                                }
+                            }
+                        </InputSelect>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label>Geçerlilik Başlangıcı</label>
+                        <InputDate class="form-control" @bind-Value="currentPrice.GecerlilikBaslangic" />
+                    </div>
+                    <div class="col-md-6">
+                        <label>Geçerlilik Bitişi</label>
+                        <InputDate class="form-control" @bind-Value="currentPrice.GecerlilikBitis" />
+                    </div>
+                                <div class="col-md-6">
+                                    <label>Misafir Sınırı</label>
+                                    <InputNumber class="form-control" @bind-Value="currentPrice.MaxGuests" />
+                                </div>
+                </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" @onclick="CloseModal">İptal</button>
+                                <button type="submit" class="btn btn-primary">Kaydet</button>
+                            </div>
+            </EditForm>
+        </div>
+    </div>
+    </div>
+		</div>
+        <div class="modal-backdrop fade show">
+        </div>
+        
+    }
+
+
+    <h4>Mevcut Fiyat Tanımları</h4>
+    @if (pricesForSelectedHotel == null)
+    {
+        <p><em>Fiyatlar yükleniyor...</em></p>
+    }
+    else if (!pricesForSelectedHotel.Any())
+    {
+        <p>Bu otel için henüz bir fiyat tanımı eklenmemiş.</p>
+    }
+    else
+    {
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Tutar</th>
+                    <th>Başlangıç</th>
+                    <th>Bitiş</th>
+                    <th>Kapasite</th>
+                    <AuthorizeView roles="Admin">
+                        <th>İşlemler</th>
+                    </AuthorizeView>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var price in pricesForSelectedHotel)
+                {
+                    <tr>
+                        <td>@price.Amount.ToString("N2") @price.Currency.Code</td>
+                        <td>@price.GecerlilikBaslangic.ToShortDateString()</td>
+                        <td>@price.GecerlilikBitis.ToShortDateString()</td>
+						<td>@price.MaxGuests</td>
+                        <AuthorizeView roles="Admin">
+                        <td>
+                            <button class="btn btn-warning btn-sm" @onclick="() => OpenEditMOdal(price)">Düzenle</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => DeletePrice(price.Id)">Sil</button>
+                        </td>
+                        </AuthorizeView>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }}
+
+
+@code {
+    private List<Hotel>? allHotels;
+    private List<Currency>? allCurrencies;
+    private List<Price>? pricesForSelectedHotel;
+
+    private int selectedHotelId;
+    private Price currentPrice = new() { GecerlilikBaslangic = DateTime.Today, GecerlilikBitis = DateTime.Today.AddMonths(1) };
+
+    private bool isModalvisible= false;
+    private bool isEditMode = false;
+    protected override async Task OnInitializedAsync()
+    {
+
+        allHotels = (await Http.GetFromJsonAsync<Hotel[]>("api/hotels"))?.ToList();
+        allCurrencies = (await Http.GetFromJsonAsync<Currency[]>("api/currencies"))?.ToList();
+    }
+
+    private async Task LoadPricesForSelectedHotel()
+    {
+        if (selectedHotelId > 0)
+        {
+            pricesForSelectedHotel = null; 
+            StateHasChanged();
+            pricesForSelectedHotel = await Http.GetFromJsonAsync<List<Price>>($"api/prices/forHotel/{selectedHotelId}");
+        }
+    }
+
+    private async Task HandleAddPrice()
+    {
+        if (selectedHotelId > 0 && currentPrice.CurrencyId > 0)
+        {
+            currentPrice.HotelId = selectedHotelId;
+            var response = await Http.PostAsJsonAsync("api/prices", currentPrice);
+            if (response.IsSuccessStatusCode)
+            {
+                currentPrice = new() { GecerlilikBaslangic = DateTime.Today, GecerlilikBitis = DateTime.Today.AddMonths(1) };
+                await LoadPricesForSelectedHotel(); 
+            }
+        }
+    }
+
+    private async Task HandleSave()
+    {
+        currentPrice.HotelId = selectedHotelId; 
+
+        HttpResponseMessage response;
+        if (isEditMode)
+        {
+            
+            response = await Http.PutAsJsonAsync($"api/prices/{currentPrice.Id}", currentPrice);
+        }
+        else
+        {
+            
+            response = await Http.PostAsJsonAsync("api/prices", currentPrice);
+        }
+
+        if (response.IsSuccessStatusCode)
+        {
+            CloseModal();
+            await LoadPricesForSelectedHotel(); 
+        }
+        else
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            
+            Console.WriteLine($"Fiyat kaydedilemedi: ({response.StatusCode}) {errorMessage}");
+            
+        }
+    }
+
+    private async Task DeletePrice(int id)
+    {
+        await Http.DeleteAsync($"api/prices/{id}");
+
+        await LoadPricesForSelectedHotel();
+
+    }
+
+    private async Task UpdatePrice(Price price)
+    {
+        await Http.PutAsJsonAsync($"api/prices/{price.Id}",price);
+
+        await LoadPricesForSelectedHotel();
+
+    }
+
+    private void OpenAddModal()
+    {
+        isEditMode = false;
+        isModalvisible = true;
+        currentPrice = new Price
+        {
+            GecerlilikBaslangic = DateTime.Today,
+            GecerlilikBitis = DateTime.Today.AddMonths(1)
+        };
+	}
+
+    private void OpenEditMOdal(Price price)
+    {
+        isEditMode = true;
+        isModalvisible = true;
+        currentPrice = new Price
+            {
+                Amount = price.Amount,
+                CurrencyId = price.CurrencyId,
+                GecerlilikBaslangic = price.GecerlilikBaslangic,
+                GecerlilikBitis = price.GecerlilikBitis,
+			    MaxGuests = price.MaxGuests,
+                Id = price.Id
+
+            };
+       
+	}
+
+	private void CloseModal() => isModalvisible = false;
+}

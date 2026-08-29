@@ -1,0 +1,237 @@
+﻿@page "/manage-stopsales"
+@attribute [Authorize(Roles = "Admin")]
+@using Rezervasyon.Client.Models
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Stop Sale Yönetimi</PageTitle>
+<h3>Stop Sale Yönetimi</h3>
+
+<div class="mb-3">
+    <label for="hotel-select" class="form-label">Stop Sale Eklemek/Düzenlemek İstediğiniz Oteli Seçin:</label>
+    <InputSelect id="hotel-select" class="form-select" @bind-Value="selectedHotelId" @bind-Value:after="LoadStopSalesForHotel">
+        <option value="0" disabled>-- Bir otel seçin --</option>
+        @if (allHotels != null)
+        {
+            @foreach(var hotel in allHotels) {
+                <option value="@hotel.Id">@hotel.Name</option>
+            }
+ }
+    </InputSelect>
+</div>
+
+@if (selectedHotelId > 0)
+{
+    <button class="btn btn-primary mb-3" @onclick="OpenAddModal">Yeni Stop Sale Dönemi Ekle</button>
+
+    <h4>Mevcut Stop Sale Dönemleri</h4>
+    @if (stopSalesForHotel == null)
+    {
+        <p><em>Yükleniyor...</em></p>
+    }
+    else if (!stopSalesForHotel.Any())
+    {
+
+        <p>Bu otel için Stop Sale tanımı yok.</p>
+    }
+    else
+    {
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>Başlangıç</th>
+                    <th>Bitiş</th>
+                    <th>Açıklama</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ss in stopSalesForHotel)
+                {
+                    <tr>
+                        <td>@ss.BaslangicTarihi.ToShortDateString()</td>
+                        <td>@ss.BitisTarihi.ToShortDateString()</td>
+                        <td>@ss.Aciklama</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" @onclick="() => OpenEditModal(ss)">Düzenle</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => DeleteStopSale(ss.Id)">Sil</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table> 
+    }
+
+    @if (isModalVisible)
+    {
+        <div class="modal fade show" tabindex="-1" style="display: block;" role="dialog">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@(isEditMode ? "Stop Sale Dönemini Düzenle" : "Yeni Stop Sale Dönemi Ekle")</h5>
+                        <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if (currentStopSale != null)
+                        {
+                            <EditForm Model="currentStopSale" OnValidSubmit="HandleSave">
+                                <DataAnnotationsValidator />
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label>Başlangıç Tarihi</label>
+                                        <InputDate class="form-control" @bind-Value="currentStopSale.BaslangicTarihi" />
+                                        <ValidationMessage For="@(() => currentStopSale.BaslangicTarihi)" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label>Bitiş Tarihi</label>
+                                        <InputDate class="form-control" @bind-Value="currentStopSale.BitisTarihi" />
+                                        <ValidationMessage For="@(() => currentStopSale.BitisTarihi)" />
+                                    </div>
+                                    <div class="col-12">
+                                        <label>Açıklama (Opsiyonel)</label>
+                                        <InputText class="form-control" @bind-Value="currentStopSale.Aciklama" />
+                                        <ValidationMessage For="@(() => currentStopSale.Aciklama)" />
+                                    </div>
+                                </div>
+                                <div class="modal-footer mt-3">
+                                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">İptal</button>
+                                    @if (isEditMode)
+                                    {
+                                        <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn btn-success">Dönemi Ekle</button>
+                                    }
+                                </div>
+                            </EditForm>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    }
+}
+
+
+@code {
+    private List<Hotel>? allHotels;
+    private List<StopSale>? stopSalesForHotel;
+    private int selectedHotelId;
+
+
+    private bool isModalVisible = false;
+    private bool isEditMode = false;
+    private StopSale currentStopSale = new(); 
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+        try { allHotels = (await Http.GetFromJsonAsync<Hotel[]>("api/hotels"))?.ToList(); } catch (Exception ex) { Console.WriteLine($"Oteller yüklenemedi: {ex.Message}"); allHotels = new List<Hotel>(); }
+    }
+
+    private async Task LoadStopSalesForHotel()
+    {
+        
+        if (selectedHotelId > 0)
+        {
+            stopSalesForHotel = null; StateHasChanged();
+            try { stopSalesForHotel = await Http.GetFromJsonAsync<List<StopSale>>($"api/stopsales/forHotel/{selectedHotelId}"); }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Otel stop sale dönemleri yüklenemedi: {ex.Message}");
+                stopSalesForHotel = new List<StopSale>(); 
+            }
+            StateHasChanged(); 
+        }
+        else
+        {
+            stopSalesForHotel = new List<StopSale>(); 
+            StateHasChanged();
+        }
+    }
+
+    private void OpenAddModal()
+    {
+       
+        isEditMode = false;
+        currentStopSale = new StopSale 
+        {
+            BaslangicTarihi = DateTime.Today,
+            BitisTarihi = DateTime.Today.AddDays(7)
+            
+        };
+        isModalVisible = true;
+    }
+
+    private void OpenEditModal(StopSale stopSale)
+    {
+        
+        isEditMode = true;
+        currentStopSale = new StopSale 
+        {
+            Id = stopSale.Id,
+            BaslangicTarihi = stopSale.BaslangicTarihi,
+            BitisTarihi = stopSale.BitisTarihi,
+            Aciklama = stopSale.Aciklama,
+            HotelId = stopSale.HotelId
+        };
+        isModalVisible = true;
+    }
+
+    private void CloseModal() => isModalVisible = false;
+
+    private async Task HandleSave() 
+    {
+        currentStopSale.HotelId = selectedHotelId; 
+
+     
+        if (currentStopSale.BaslangicTarihi >= currentStopSale.BitisTarihi)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Başlangıç tarihi, bitiş tarihinden önce olmalıdır.");
+            return;
+        }
+
+        HttpResponseMessage response;
+        if (isEditMode)
+        {
+           
+            response = await Http.PutAsJsonAsync($"api/stopsales/{currentStopSale.Id}", currentStopSale);
+        }
+        else
+        {
+            response = await Http.PostAsJsonAsync("api/stopsales", currentStopSale);
+        }
+
+        if (response.IsSuccessStatusCode)
+        {
+            CloseModal();
+            await LoadStopSalesForHotel(); 
+        }
+        else
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            await JSRuntime.InvokeVoidAsync("alert", $"Stop Sale kaydedilemedi: ({response.StatusCode}) {errorMessage}");
+        }
+    }
+
+    private async Task DeleteStopSale(int id)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Bu Stop Sale kaydını silmek istediğinize emin misiniz?");
+        if (confirmed)
+        {
+           
+            var response = await Http.DeleteAsync($"api/stopsales/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadStopSalesForHotel(); 
+            }
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                await JSRuntime.InvokeVoidAsync("alert", $"Stop Sale silinemedi: ({response.StatusCode}) {errorMessage}");
+            }
+        }
+    }
+}

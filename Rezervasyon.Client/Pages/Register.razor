@@ -1,0 +1,73 @@
+﻿@page "/register"
+@using Rezervasyon.Client.Models
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Kayıt Ol</PageTitle>
+
+<h3>Kayıt Ol</h3>
+
+<div class="card">
+    <div class="card-body">
+        <EditForm Model="registerModel" OnValidSubmit="HandleRegistration">
+            <DataAnnotationsValidator />
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+
+            <div class="mb-3">
+                <label for="username" class="form-label">Kullanıcı Adı</label>
+                <InputText id="username" class="form-control" @bind-Value="registerModel.Username" />
+                <ValidationMessage For="@(() => registerModel.Username)" />
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Şifre</label>
+                <InputText id="password" type="password" class="form-control" @bind-Value="registerModel.Password" />
+                <ValidationMessage For="@(() => registerModel.Password)" />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Kayıt Ol</button>
+        </EditForm>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="/login">Zaten bir hesabın var mı? Giriş Yap</a>
+</div>
+
+
+@code {
+    private LoginModel registerModel = new();
+    private string errorMessage;
+
+    private async Task HandleRegistration()
+    {
+        try
+        {
+            errorMessage = string.Empty;
+
+            var response = await Http.PostAsJsonAsync("api/auth/register", registerModel);
+
+            if (response.IsSuccessStatusCode)
+            {
+               
+                Navigation.NavigateTo("/login");
+            }
+            else
+            {
+             
+                errorMessage = await response.Content.ReadAsStringAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Kayıt sırasında bir hata oluştu: " + ex.Message;
+        }
+    }
+
+ 
+}

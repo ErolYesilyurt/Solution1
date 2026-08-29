@@ -1,0 +1,126 @@
+﻿@page "/search-results"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.WebUtilities
+@using Rezervasyon.Client.Models 
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<PageTitle>Arama Sonuçları</PageTitle>
+
+<h3>Arama Sonuçları</h3>
+
+
+<div class="alert alert-secondary mb-3">
+    <strong>Aranan Kriterler:</strong>
+    Hedef: @(destination ?? "-"),
+    Giriş: @checkIn?.ToShortDateString(),
+    Çıkış: @checkOut?.ToShortDateString(),
+    Yetişkin: @adults,
+    Çocuk: @children
+</div>
+
+@if (isLoading)
+{
+    <p><em>Oteller aranıyor...</em></p>
+}
+else if (searchError != null)
+{
+    <div class="alert alert-danger">@searchError</div>
+}
+else if (searchResults == null || !searchResults.Any())
+{
+    <p>Belirttiğiniz kriterlere uygun otel bulunamadı.</p>
+}
+else
+{
+    <p>@searchResults.Count() adet uygun otel bulundu.</p>
+    <div class="list-group">
+        @foreach (var hotel in searchResults)
+        {
+            <a href="@($"hotel/{hotel.Id}?checkIn={checkIn.Value:yyyy-MM-dd}&checkOut={checkOut.Value:yyyy-MM-dd}&adults={adults}&children={children}")" class="list-group-item list-group-item-action ...">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">@hotel.Name (@hotel.City)</h5>
+                    <small>@hotel.Stars ⭐</small>
+                </div>
+                <p class="mb-1 fw-bold fs-5 text-primary">
+                    @hotel.ToplamTutar.ToString("N2") @hotel.ParaBirimiKodu
+                    <small class="text-muted fw-normal fs-6">(@hotel.GeceSayisi gece toplamı)</small>
+                </p>
+                <small class="text-muted">Gecelik: @hotel.GecelikFiyat.ToString("N2") @hotel.ParaBirimiKodu</small>
+            </a>
+        }
+    </div>
+}
+
+<button class="btn btn-secondary mt-3" @onclick="GoBackToSearch">Yeni Arama</button>
+
+@code {
+    private List<HotelSearchResultDto>? searchResults;
+    private bool isLoading = true;
+    private string? searchError;
+
+ 
+    [SupplyParameterFromQuery] public string? destination { get; set; }
+    [SupplyParameterFromQuery] public DateTime? checkIn { get; set; }
+    [SupplyParameterFromQuery] public DateTime? checkOut { get; set; }
+    [SupplyParameterFromQuery] public int adults { get; set; } = 1;
+    [SupplyParameterFromQuery] public int children { get; set; } = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ExecuteSearch();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await ExecuteSearch();
+    }
+
+
+    private async Task ExecuteSearch()
+    {
+        isLoading = true;
+        searchError = null;
+        searchResults = null;
+        StateHasChanged(); 
+
+
+        if (string.IsNullOrWhiteSpace(destination) || checkIn == null || checkOut == null || checkIn.Value >= checkOut.Value || adults < 1)
+        {
+            searchError = "Geçersiz arama kriterleri. Lütfen ana sayfaya dönüp tekrar deneyin.";
+            isLoading = false;
+            return;
+        }
+
+        try
+        { 
+            
+            string requestUri = $"api/hotels/search-with-price?destination={Uri.EscapeDataString(destination)}&checkIn={checkIn.Value:yyyy-MM-dd}&checkOut={checkOut.Value:yyyy-MM-dd}&adults={adults}&children={children}";
+            var response = await Http.GetAsync(requestUri);
+
+            if (response.IsSuccessStatusCode)
+            {
+                searchResults = await response.Content.ReadFromJsonAsync<List<HotelSearchResultDto>>();
+            }
+            else
+            {
+                searchError = $"Arama sırasında hata oluştu: ({response.StatusCode}) {await response.Content.ReadAsStringAsync()}";
+            }
+        }
+        catch (Exception ex)
+        {
+            searchError = $"Arama yapılırken beklenmedik bir hata oluştu: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged(); 
+        }
+    }
+
+    private void GoBackToSearch()
+    {
+        NavigationManager.NavigateTo("/"); 
+    }
+}

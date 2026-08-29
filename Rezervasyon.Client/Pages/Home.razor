@@ -1,0 +1,90 @@
+﻿@page "/"
+@using System.ComponentModel.DataAnnotations
+@using System.Web
+@inject NavigationManager NavigationManager
+
+<PageTitle>Ana Sayfa - Otel Ara</PageTitle>
+
+<div class="container mt-4">
+    <div class="card p-3 shadow-sm">
+        <h3>Otel Ara</h3>
+        <EditForm Model="searchCriteria" OnValidSubmit="PerformSearch">
+            <DataAnnotationsValidator />
+            <div class="row g-3 align-items-end">
+
+                <div class="col-lg-4 col-md-12 mb-2 mb-lg-0">
+                    <label for="destination" class="form-label">Hedef</label> <InputText id="destination" class="form-control form-control-lg" placeholder="Şehir veya Otel Adı" @bind-Value="searchCriteria.Destination" />
+                    <ValidationMessage For="@(() => searchCriteria.Destination)" />
+                </div>
+
+                <div class="col-lg col-md-6 mb-2 mb-lg-0">
+                    <label for="checkin" class="form-label">Giriş Tarihi</label> <InputDate id="checkin" class="form-control" @bind-Value="searchCriteria.CheckInDate" />
+                    <ValidationMessage For="@(() => searchCriteria.CheckInDate)" />
+                </div>
+
+                <div class="col-lg col-md-6 mb-2 mb-lg-0">
+                    <label for="checkout" class="form-label">Çıkış Tarihi</label> <InputDate id="checkout" class="form-control" @bind-Value="searchCriteria.CheckOutDate" />
+                    <ValidationMessage For="@(() => searchCriteria.CheckOutDate)" />
+                </div>
+
+                <div class="col-lg-2 col-md-6 mb-2 mb-lg-0">
+                    <label for="adults" class="form-label">Yetişkin</label> <InputNumber id="adults" class="form-control" @bind-Value="searchCriteria.AdultCount" />
+                    <ValidationMessage For="@(() => searchCriteria.AdultCount)" />
+                </div>
+
+                <div class="col-lg-1 col-md-6 mb-2 mb-lg-0">
+                    <label for="children" class="form-label">Çocuk</label> <InputNumber id="children" class="form-control" @bind-Value="searchCriteria.ChildCount" />
+                    <ValidationMessage For="@(() => searchCriteria.ChildCount)" />
+                </div>
+
+
+                <div class="col-lg-auto col-md-12">
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <span class="bi bi-search" aria-hidden="true"></span> Ara
+                    </button>
+                </div>
+
+            </div>
+        </EditForm>
+    </div>
+
+    
+    
+
+</div>
+
+@code {
+    private HotelSearchCriteria searchCriteria = new HotelSearchCriteria();
+
+   
+    public class HotelSearchCriteria
+    {
+        [Required(ErrorMessage = "Lütfen bir hedef girin.")]
+        public string? Destination { get; set; }
+
+        [Required(ErrorMessage = "Giriş tarihi zorunludur.")]
+        public DateTime CheckInDate { get; set; } = DateTime.Today;
+
+        [Required(ErrorMessage = "Çıkış tarihi zorunludur.")]
+        public DateTime CheckOutDate { get; set; } = DateTime.Today.AddDays(1);
+
+        [Range(1, 10, ErrorMessage = "Yetişkin sayısı 1-10 arasında olmalıdır.")]
+        public int AdultCount { get; set; } = 2;
+
+        public int ChildCount { get; set; } = 0; 
+    }
+
+    private void PerformSearch()
+    {
+        
+        var queryParams = HttpUtility.ParseQueryString(string.Empty);
+        if (!string.IsNullOrWhiteSpace(searchCriteria.Destination))
+            queryParams["destination"] = searchCriteria.Destination;
+        queryParams["checkIn"] = searchCriteria.CheckInDate.ToString("yyyy-MM-dd");
+        queryParams["checkOut"] = searchCriteria.CheckOutDate.ToString("yyyy-MM-dd");
+        queryParams["adults"] = searchCriteria.AdultCount.ToString();
+       if (searchCriteria.ChildCount > 0) queryParams["children"] = searchCriteria.ChildCount.ToString();
+
+        NavigationManager.NavigateTo($"/search-results?{queryParams}");
+    }
+}

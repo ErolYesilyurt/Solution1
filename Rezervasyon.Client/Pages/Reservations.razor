@@ -1,0 +1,589 @@
+﻿@page "/reservations"
+@attribute [Authorize]
+@using Rezervasyon.Client.Models
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+
+<PageTitle>Rezervasyonlar</PageTitle>
+
+<h3>@(isCurrentUserAdmin ? "Rezervasyon Yönetimi" : (isCurrentUserWorker ? "Rezervasyonlar (Worker)" : "Rezervasyonlarım"))</h3>
+
+<AuthorizeView Roles="Admin, Worker" Context="mainAuthContext">
+    <div class="row mb-3 align-items-end">
+        <div class="col-md-4">
+            <label for="hotelFilter" class="form-label">Otele Göre Filtrele:</label>
+            <InputSelect id="hotelFilter" class="form-select" @bind-Value="selectedHotelIdFilter" @bind-Value:after="ReloadReservations">
+                <option value="0">-- Tüm Oteller --</option>
+                @if (allHotels != null)
+                {
+                    @foreach(var hotel in allHotels) {
+                        <option value="@hotel.Id">@hotel.Name</option>
+                    }
+ }
+            </InputSelect>
+        </div>
+        <div class="col-md-auto">
+            <button class="btn btn-secondary" @onclick="ClearFilterAndReload">Filtreyi Temizle</button>
+        </div>
+    </div>
+    <AuthorizeView Roles="Admin" Context="adminButtonContext">
+        <button class="btn btn-primary mb-3" @onclick="OpenAddModal">Yeni Rezervasyon Ekle</button>
+    </AuthorizeView>
+</AuthorizeView>
+<AuthorizeView Roles="Admin, Worker">
+    <button class="btn btn-success mb-3 ms-2" @onclick="OpenSummaryModal">
+        <span class="bi bi-cash-stack" aria-hidden="true"></span> Kasa Raporu
+    </button>
+</AuthorizeView>
+@if (reservations == null)
+{
+    <p><em>Rezervasyonlar yükleniyor...</em></p>
+}
+else if (!reservations.Any())
+{
+    <p>@(isCurrentUserAdmin || isCurrentUserWorker ? "Gösterilecek rezervasyon bulunamadı." : "Henüz bir rezervasyonunuz bulunmamaktadır.")</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Otel</th>
+                <AuthorizeView Roles="Admin, Worker" Context="userHeaderContext"><th>Kullanıcı</th></AuthorizeView>
+                <th>Giriş Tarihi</th>
+                <th>Çıkış Tarihi</th>
+                <th>Misafir Sayısı</th>
+                <th>Toplam Fiyat</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var reservation in reservations)
+            {
+                <tr class="@(reservation.IsCancelled ? "text-muted" : "")">
+                    <td>@(reservation.Hotel?.Name ?? "Bilinmiyor")</td>
+                    <AuthorizeView Roles="Admin, Worker">
+                        <td>@(reservation.User?.Username ?? "Misafir")</td>
+                    </AuthorizeView>
+                    <td>@reservation.GirisTarihi.ToShortDateString()</td>
+                    <td>@reservation.CikisTarihi.ToShortDateString()</td>
+                    <td>@reservation.Guests.Count Kişi</td>
+                    <td>@reservation.ToplamFiyat.ToString("N2") @reservation.CurrencyCode</td>
+                    <td>
+                        @if (reservation.IsCancelled)
+                        {
+                            <span class="badge bg-danger">İptal Edildi</span>
+                            <small class="d-block">@reservation.CancelledOn?.ToShortDateString()</small>
+                            <AuthroizeView Roles="Admin">
+                               <!-- <button class="btn btn-warning btn-sm" @onclick="() => OpenEditModal(reservation)"> Düzenle</button> -->
+                                <button class="btn btn-danger btn-sm" @onclick="() => DeleteReservation(reservation.Id)">Sil</button>
+                            </AuthroizeView>
+                        }
+                        else
+                        {
+                            <AuthorizeView Roles="Admin">
+                                <button class="btn btn-warning btn-sm" @onclick="() => OpenEditModal(reservation)">Düzenle</button>
+                                <button class="btn btn-danger btn-sm" @onclick="() => DeleteReservation(reservation.Id)">Sil</button>
+                            </AuthorizeView>
+
+                            <AuthorizeView Roles="Worker, User" Context="authContext">
+                                @if (!authContext.User.IsInRole("Admin"))
+                                {
+                                    <button class="btn btn-info btn-sm" @onclick="() => OpenEditModal(reservation)">Detay</button>
+                                    
+                                }
+                            </AuthorizeView>
+                            <button class="btn btn-danger btn-sm" @onclick="() => CancelReservation(reservation.Id)">İptal Et</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (isModalVisible)
+{
+    <div class="modal fade show" tabindex="-1" style="display: block;" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@modalTitle</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (currentReservation != null)
+                    {
+                        <EditForm Model="currentReservation" OnValidSubmit="HandleSave">
+                            <DataAnnotationsValidator />
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Otel</label>
+                                    <InputSelect class="form-select" @bind-Value="currentReservation.HotelId" @bind-Value:after="CalculatePriceAsync" disabled="@isReadOnlyMode">
+                                        <option value="0">-- Otel Seçin --</option>
+                                        @if (allHotels != null)
+                                        {
+                                            @foreach(var hotel in allHotels) {
+                                                <option value="@hotel.Id">@hotel.Name</option>
+                                            }
+         }
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => currentReservation.HotelId)" />
+                                </div>
+
+                                <AuthorizeView Roles="Admin, Worker" Context="formAuthContext">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Kayıtlı Kullanıcı (Opsiyonel)</label>
+                                        <InputSelect class="form-select" @bind-Value="currentReservation.UserId" disabled="@isReadOnlyMode">
+                                            <option value="">-- Misafir Rezervasyonu --</option>
+                                            @if (allUsers != null)
+                                            {
+                                                @foreach(var user in allUsers) {
+                                                    <option value="@user.Id">@user.Username</option>
+                                                }
+         }
+                                        </InputSelect>
+                                        <ValidationMessage For="@(() => currentReservation.UserId)" />
+                                    </div>
+                                </AuthorizeView>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Giriş Tarihi</label>
+                                    <InputDate class="form-control" @bind-Value="currentReservation.GirisTarihi" @bind-Value:after="CalculatePriceAsync" disabled="@isReadOnlyMode" />
+                                    <ValidationMessage For="@(() => currentReservation.GirisTarihi)" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Çıkış Tarihi</label>
+                                    <InputDate class="form-control" @bind-Value="currentReservation.CikisTarihi" @bind-Value:after="CalculatePriceAsync" disabled="@isReadOnlyMode" />
+                                    <ValidationMessage For="@(() => currentReservation.CikisTarihi)" />
+                                </div>
+
+                                <hr />
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5>Misafirler (@currentReservation.Guests.Count)</h5>
+                                    @if (!isReadOnlyMode)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-success" @onclick="()=>AddGuest()">Misafir Ekle</button>
+                                    }
+                                </div>
+
+                                <div style="max-height: 200px; overflow-y: auto;">
+                                    @foreach (var guest in currentReservation.Guests)
+                                    {
+                                        <div class="row g-2 mb-2 border rounded p-2 align-items-center">
+                                            <div class="col-md-4">
+                                                <label class="form-label" style="font-size: 0.8em;">Ad</label>
+                                                <InputText class="form-control form-control-sm" @bind-Value="guest.FirstName" disabled="@isReadOnlyMode" />
+                                                <ValidationMessage For="@(() => guest.FirstName)" />
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label" style="font-size: 0.8em;">Soyad</label>
+                                                <InputText class="form-control form-control-sm" @bind-Value="guest.LastName" disabled="@isReadOnlyMode" />
+                                                <ValidationMessage For="@(() => guest.LastName)" />
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label" style="font-size: 0.8em;">Doğum Tarihi</label>
+                                                <InputDate class="form-control form-control-sm" @bind-Value="guest.DateOfBirth" disabled="@isReadOnlyMode" @bind-Value:after="CalculatePriceAsync" />
+                                                <ValidationMessage For="@(() => guest.DateOfBirth)" />
+                                            </div>
+                                            @if (!isReadOnlyMode)
+                                            {
+                                                <div class="col-md-1 d-flex align-items-end">
+                                                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => RemoveGuest(guest)">X</button>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                <hr />
+
+                                <div class="col-12 mb-3">
+                                    <label class="form-label">Hesaplanan Fiyat</label>
+                                    @if (isCalculatingPrice)
+                                    {
+                                        <p><em>Fiyat hesaplanıyor...</em></p>
+                                    }
+                                    else if (!string.IsNullOrEmpty(priceCalculationError))
+                                    {
+
+                                        <div class="alert alert-danger py-1">@priceCalculationError</div>
+                                    }
+                                    else if (calculatedPriceInfo != null)
+                                    {
+                                        <p class="fw-bold fs-5">
+                                            @calculatedPriceInfo.ToplamTutar.ToString("N2") @calculatedPriceInfo.ParaBirimiKodu
+                                            <small class="text-muted fw-normal">(@calculatedPriceInfo.GeceSayisi gece x @calculatedPriceInfo.GecelikFiyat.ToString("N2") @calculatedPriceInfo.ParaBirimiKodu /gece)</small>
+                                            <small class="text-muted fw-normal d-block">(@GetGuestCountsFromList().Yetiskin Yetişkin, @GetGuestCountsFromList().Cocuk Çocuk)</small>
+                                        </p>
+                                    }
+                                    else
+                                    {
+
+                                        <p><em>Fiyatı hesaplamak için Otel, Tarih ve Misafirleri girin.</em></p>
+                                    }
+                                    <InputNumber @bind-Value="currentReservation.ToplamFiyat" hidden />
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label class="form-label">Açıklama</label>
+                                    <InputTextArea class="form-control" @bind-Value="currentReservation.Aciklama" disabled="@isReadOnlyMode" />
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" @onclick="CloseModal">Kapat</button>
+                                @if (!isReadOnlyMode)
+                                {
+                                    <button type="submit" class="btn btn-primary" disabled="@isCalculatingPrice">Kaydet</button>
+                                }
+                            </div>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+
+
+}
+
+@if (isSummaryModalVisible)
+{
+    <div class="modal fade show" tabindex="-1" style="display: block;" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Kasa Raporu (Genel Bakış)</h5>
+                    <button type="button" class="btn-close" @onclick="CloseSummaryModal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (summary == null)
+                    {
+                        <p><em>Finansal veriler hesaplanıyor...</em></p>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="card text-white bg-success">
+                                    <div class="card-header">KASADAKİ NET KAZANÇ</div>
+                                    <div class="card-body">
+                                        <h4 class="card-title">@summary.ToplamKazanc.ToString("C")</h4>
+                                        <p class="card-text">(Aktif Rez. + İptal Kesintileri)</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card text-dark bg-warning">
+                                    <div class="card-header">TOPLAM POTANSİYEL (Kayıp Dahil)</div>
+                                    <div class="card-body">
+                                        <h4 class="card-title">@summary.PotansiyelKazanc.ToString("C")</h4>
+                                        <p class="card-text">@summary.ToplamRezervasyonKaydi adet toplam kayıttan.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card text-white bg-danger">
+                                    <div class="card-header">İPTALDEN GELEN (KESİNTİ)</div>
+                                    <div class="card-body">
+                                        <h4 class="card-title">@summary.IptalEdilenTutar.ToString("C")</h4>
+                                        <p class="card-text">@summary.IptalEdilenRezervasyonSayisi adet iptalden.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card text-dark bg-info">
+                                    <div class="card-header">AKTİF REZERVASYONLAR</div>
+                                    <div class="card-body">
+                                        <h4 class="card-title">@summary.AktifRezervasyonSayisi Adet</h4>
+                                        <p class="card-text">Henüz iptal edilmemiş.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseSummaryModal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+    private List<Reservation>? reservations;
+    private List<Hotel>? allHotels;
+    private List<User>? allUsers;
+
+    private int? currentUserId = null;
+    private bool isCurrentUserAdmin = false;
+    private bool isCurrentUserWorker = false;
+    private bool isReadOnlyMode = false;
+    private string modalTitle = "";
+
+    private int selectedHotelIdFilter = 0;
+
+    private bool isModalVisible = false;
+    private bool isEditMode = false;
+    private Reservation currentReservation = new();
+
+    private PriceCalculationResult? calculatedPriceInfo;
+    private bool isCalculatingPrice = false;
+    private string? priceCalculationError;
+
+    private bool isSummaryModalVisible = false;
+    private FinancialSummary? summary;
+    private bool isLoadingSummary = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        isCurrentUserAdmin = user.IsInRole("Admin");
+        isCurrentUserWorker = user.IsInRole("Worker");
+
+        var userIdString = user.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (userIdString != null && int.TryParse(userIdString, out int parsedId)) { currentUserId = parsedId; }
+
+        await LoadInitialData();
+        await ReloadReservations();
+    }
+
+    private async Task LoadInitialData()
+    {
+        if (isCurrentUserAdmin || isCurrentUserWorker)
+        {
+            try { allHotels = await Http.GetFromJsonAsync<List<Hotel>>("api/hotels"); } catch (Exception ex) { Console.WriteLine($"Oteller yüklenemedi: {ex.Message}"); allHotels = new List<Hotel>(); }
+            try { allUsers = await Http.GetFromJsonAsync<List<User>>("api/users"); } catch (Exception ex) { Console.WriteLine($"Kullanıcılar yüklenemedi: {ex.Message}"); allUsers = new List<User>(); }
+        }
+    }
+
+    private async Task ReloadReservations()
+    {
+        reservations = null;
+        StateHasChanged();
+        string apiUrl;
+
+        if (isCurrentUserAdmin || isCurrentUserWorker)
+        {
+            apiUrl = "api/reservations";
+            if (selectedHotelIdFilter > 0) { apiUrl += $"?hotelId={selectedHotelIdFilter}"; }
+        }
+        else { apiUrl = "api/reservations/my"; }
+
+        try
+        {
+            reservations = await Http.GetFromJsonAsync<List<Reservation>>(apiUrl);
+        }
+        catch (Exception ex) { Console.WriteLine($"Rezervasyonlar yüklenemedi: {ex.Message}"); reservations = new List<Reservation>(); }
+        StateHasChanged();
+    }
+
+    private async Task ClearFilterAndReload() { selectedHotelIdFilter = 0; await ReloadReservations(); }
+
+    private async Task OpenSummaryModal()
+    {
+        isSummaryModalVisible = true;
+        isLoadingSummary = true;
+        summary = null;
+        StateHasChanged();
+        try
+        {
+            summary = await Http.GetFromJsonAsync<FinancialSummary>("api/reservations/financial-summary");
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Finansal özet yüklenemedi.Hata {ex}");
+            throw;
+        }
+        finally
+        {
+            isLoadingSummary = false;
+            StateHasChanged();
+        }
+    }
+
+    private void CloseSummaryModal() { isSummaryModalVisible = false; }
+
+    private void OpenAddModal()
+    {
+        isEditMode = false;
+        isReadOnlyMode = false;
+        modalTitle = "Yeni Rezervasyon Ekle";
+        currentReservation = new Reservation { GirisTarihi = DateTime.Today, CikisTarihi = DateTime.Today.AddDays(1) };
+        AddGuest(preventPriceCalculation: true);
+        calculatedPriceInfo = null;
+        priceCalculationError = null;
+        isModalVisible = true;
+    }
+
+    private void OpenEditModal(Reservation reservation)
+    {
+        isEditMode = isCurrentUserAdmin;
+        isReadOnlyMode = !isEditMode;
+        modalTitle = isReadOnlyMode ? "Rezervasyon Detayları" : "Rezervasyonu Düzenle";
+
+        currentReservation = new Reservation
+        {
+            Id = reservation.Id,
+            GirisTarihi = reservation.GirisTarihi,
+            CikisTarihi = reservation.CikisTarihi,
+            ToplamFiyat = reservation.ToplamFiyat,
+            Aciklama = reservation.Aciklama,
+            UserId = reservation.UserId,
+            HotelId = reservation.HotelId,
+            Guests = reservation.Guests.Select(g => new Guest
+            {
+                Id = g.Id,
+                FirstName = g.FirstName,
+                LastName = g.LastName,
+                DateOfBirth = g.DateOfBirth
+            }).ToHashSet()
+        };
+
+        calculatedPriceInfo = null;
+        priceCalculationError = null;
+        isModalVisible = true;
+        _ = CalculatePriceAsync();
+    }
+
+    private void CloseModal() => isModalVisible = false;
+
+    private int CalculateAge(DateTime dateOfBirth, DateTime referenceDate)
+    {
+        int age = referenceDate.Year - dateOfBirth.Year;
+        if (dateOfBirth.Date > referenceDate.Date.AddYears(-age)) age--;
+        return age;
+    }
+
+    private (int Yetiskin, int Cocuk) GetGuestCountsFromList()
+    {
+        if (currentReservation.Guests == null || !currentReservation.Guests.Any()) return (0, 0);
+        var yetiskinSayisi = currentReservation.Guests.Count(g => CalculateAge(g.DateOfBirth, currentReservation.GirisTarihi) >= 12);
+        var cocukSayisi = currentReservation.Guests.Count(g => CalculateAge(g.DateOfBirth, currentReservation.GirisTarihi) < 12);
+        return (yetiskinSayisi, cocukSayisi);
+    }
+
+
+    private async Task CalculatePriceAsync()
+    {
+        var (yetiskinSayisi, cocukSayisi) = GetGuestCountsFromList();
+
+        if (currentReservation.HotelId <= 0 || currentReservation.GirisTarihi == default || currentReservation.CikisTarihi == default || currentReservation.GirisTarihi >= currentReservation.CikisTarihi || yetiskinSayisi <= 0)
+        {
+            calculatedPriceInfo = null;
+            priceCalculationError = "Lütfen geçerli otel, tarih aralığı ve en az 1 yetişkin misafir ekleyin.";
+            currentReservation.ToplamFiyat = 0;
+            StateHasChanged();
+            return;
+        }
+
+        isCalculatingPrice = true;
+        priceCalculationError = null;
+        calculatedPriceInfo = null;
+        StateHasChanged();
+
+        try
+        {
+            var priceRequest = new
+            {
+                HotelId = currentReservation.HotelId,
+                CheckInDate = currentReservation.GirisTarihi,
+                CheckOutDate = currentReservation.CikisTarihi,
+                GuestBirthDates = currentReservation.Guests.Select(g => g.DateOfBirth).ToList()
+            };
+            var response = await Http.PostAsJsonAsync("api/prices/calculate", priceRequest);
+
+            if (response.IsSuccessStatusCode)
+            {
+                calculatedPriceInfo = await response.Content.ReadFromJsonAsync<PriceCalculationResult>();
+                if (calculatedPriceInfo != null) { currentReservation.ToplamFiyat = calculatedPriceInfo.ToplamTutar;
+                    currentReservation.CurrencyCode = calculatedPriceInfo.ParaBirimiKodu;
+                }
+            }
+            else { priceCalculationError = $"Fiyat hesaplanamadı: ({response.StatusCode}) {await response.Content.ReadAsStringAsync()}"; currentReservation.ToplamFiyat = 0; }
+        }
+        catch (Exception ex) { priceCalculationError = $"Hesaplama hatası: {ex.Message}"; currentReservation.ToplamFiyat = 0; }
+        finally { isCalculatingPrice = false; StateHasChanged(); }
+    }
+
+
+    private async Task HandleSave()
+    {
+        await CalculatePriceAsync();
+        if (priceCalculationError != null || currentReservation.ToplamFiyat <= 0) { await JSRuntime.InvokeVoidAsync("alert", "Lütfen geçerli bir fiyat hesaplaması yapın."); return; }
+        if (currentReservation.Guests == null || !currentReservation.Guests.Any(g => !string.IsNullOrWhiteSpace(g.FirstName) && !string.IsNullOrWhiteSpace(g.LastName)))
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Lütfen tüm misafirlerin Ad/Soyad bilgilerini girin."); return;
+        }
+
+        if (currentReservation.UserId == null || currentReservation.UserId == 0) { currentReservation.UserId = null; }
+
+        HttpResponseMessage response;
+        if (isEditMode)
+        {
+            response = await Http.PutAsJsonAsync($"api/reservations/{currentReservation.Id}", currentReservation);
+        }
+        else
+        {
+            response = await Http.PostAsJsonAsync("api/reservations", currentReservation);
+        }
+
+        if (response.IsSuccessStatusCode) { CloseModal(); await ReloadReservations(); }
+        else { var errorMessage = await response.Content.ReadAsStringAsync(); await JSRuntime.InvokeVoidAsync("alert", $"Rezervasyon kaydedilemedi: ({response.StatusCode}) {errorMessage}"); }
+    }
+
+    private async Task DeleteReservation(int id)
+    {
+        // 4. DÜZELTME: JSRuntime'dan bool değer almak için InvokeAsync<bool> kullanılmalı
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Bu rezervasyonu silmek istediğinize emin misiniz?");
+        if (confirmed)
+        {
+            var response = await Http.DeleteAsync($"api/reservations/{id}");
+            if (response.IsSuccessStatusCode) { await ReloadReservations(); }
+            else { var errorMessage = await response.Content.ReadAsStringAsync(); await JSRuntime.InvokeVoidAsync("alert", $"Rezervasyon silinemedi: ({response.StatusCode}) {errorMessage}"); }
+        }
+    }
+
+    private async Task CancelReservation(int id)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Bu rezervasyonu iptal etmek istediğinize emin misiniz?");
+        if (confirmed)
+        {
+            var cancelRequest = new { UserId = currentUserId.Value };
+            var response = await Http.PutAsJsonAsync($"api/reservations/{id}/cancel", cancelRequest);
+
+            if (response.IsSuccessStatusCode) { await ReloadReservations(); }
+            else { var errorMessage = await response.Content.ReadAsStringAsync(); await JSRuntime.InvokeVoidAsync("alert", $"Rezervasyon iptal edilemedi: ({response.StatusCode}) {errorMessage}"); }
+        }
+	}
+    private void AddGuest(bool preventPriceCalculation = false)
+    {
+        if (currentReservation.Guests == null) { currentReservation.Guests = new List<Guest>(); }
+        currentReservation.Guests.Add(new Guest
+        {
+            DateOfBirth = DateTime.Today.AddYears(-30)
+        });
+
+        if (!preventPriceCalculation) { _ = CalculatePriceAsync(); }
+        StateHasChanged();
+    }
+
+    private void RemoveGuest(Guest guest)
+    {
+        if (currentReservation.Guests?.Contains(guest) == true)
+        {
+            currentReservation.Guests.Remove(guest);
+            _ = CalculatePriceAsync();
+            StateHasChanged();
+        }
+    }
+}

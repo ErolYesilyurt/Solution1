@@ -1,0 +1,354 @@
+﻿@page "/hotel/{Id:int}"
+@attribute [Authorize]
+@using Rezervasyon.Client.Models
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JSRuntime
+
+@if (hotel == null)
+{
+    <div class="d-flex justify-content-center mt-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Yükleniyor...</span>
+        </div>
+    </div>
+}
+else
+{
+    <PageTitle>@hotel.Name - Rezervasyon</PageTitle>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-7">
+                <div class="card shadow-sm mb-4">
+                    <img src="https://via.placeholder.com/800x400?text=@hotel.Name" class="card-img-top" alt="@hotel.Name">
+                    <div class="card-body">
+                        <h1 class="card-title display-6">@hotel.Name</h1>
+                        <p class="text-muted"><i class="bi bi-geo-alt-fill"></i> @hotel.City</p>
+                        <div class="mb-3">
+                            @for (int i = 0; i < hotel.Stars; i++)
+                            {
+                                <i class="bi bi-star-fill text-warning"></i>
+                            }
+                        </div>
+                        <p class="card-text">
+                            Bu otel, konforlu konaklama imkanları ve merkezi konumu ile harika bir tatil deneyimi sunuyor.
+                            (Buraya veritabanından 'Description' alanı gelebilir).
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="card shadow-lg border-0 rounded-3 sticky-top" style="top: 20px; z-index: 10;">
+
+                    <div class="card-header bg-primary text-white p-3 rounded-top-3">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-calendar-check-fill me-2"></i>Rezervasyon Yap</h5>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <EditForm Model="currentReservation" OnValidSubmit="HandleReservation">
+                            <DataAnnotationsValidator />
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <div class="form-floating">
+                                        <InputDate id="checkIn" class="form-control fw-bold" @bind-Value="currentReservation.GirisTarihi" @bind-Value:after="CalculatePriceAsync" />
+                                        <label for="checkIn">Giriş Tarihi</label>
+                                    </div>
+                                    <ValidationMessage For="@(() => currentReservation.GirisTarihi)" />
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-floating">
+                                        <InputDate id="checkOut" class="form-control fw-bold" @bind-Value="currentReservation.CikisTarihi" @bind-Value:after="CalculatePriceAsync" />
+                                        <label for="checkOut">Çıkış Tarihi</label>
+                                    </div>
+                                    <ValidationMessage For="@(() => currentReservation.CikisTarihi)" />
+                                </div>
+                            </div>
+
+                            <hr class="text-muted opacity-25" />
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold text-secondary mb-0">
+                                    <i class="bi bi-people-fill me-1"></i> Misafirler
+                                    <span class="badge bg-secondary rounded-pill">@currentReservation.Guests.Count</span>
+                                </h6>
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" @onclick="() => AddGuest()">
+                                    <i class="bi bi-plus-lg"></i> Ekle
+                                </button>
+                            </div>
+
+                            <div class="mb-4 pe-1" style="max-height: 250px; overflow-y: auto;">
+                                @if (!currentReservation.Guests.Any())
+                                {
+                                    <div class="text-center text-muted py-3 border rounded-3 bg-light">
+                                        <small>Henüz misafir eklenmedi.</small>
+                                    </div>
+                                }
+                                else
+                                {
+                                    @foreach (var guest in currentReservation.Guests.Select((x, i) => new { Value = x, Index = i }))
+                                    {
+                                        <div class="card mb-2 border-0 bg-light rounded-3 position-relative">
+                                            <div class="card-body p-2">
+                                                <button type="button" class="btn btn-link text-danger position-absolute top-0 end-0 p-1 text-decoration-none"
+                                                        style="font-size: 1.2rem; line-height: 1;"
+                                                        @onclick="() => RemoveGuest(guest.Value)" title="Sil">
+                                                    &times;
+                                                </button>
+
+                                                <div class="row g-2">
+                                                    <div class="col-12">
+                                                        <small class="text-muted fw-bold ms-1">@(guest.Index + 1). Misafir</small>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <InputText class="form-control form-control-sm" placeholder="Ad" @bind-Value="guest.Value.FirstName" />
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <InputText class="form-control form-control-sm" placeholder="Soyad" @bind-Value="guest.Value.LastName" />
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <div class="input-group input-group-sm">
+                                                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-cake2 text-muted"></i></span>
+                                                            <InputDate class="form-control border-start-0" @bind-Value="guest.Value.DateOfBirth" @bind-Value:after="CalculatePriceAsync" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+
+                            <div class="card bg-success bg-opacity-10 border-success border-opacity-25 mb-3">
+                                <div class="card-body text-center">
+                                    @if (isCalculatingPrice)
+                                    {
+                                        <div class="spinner-border text-success spinner-border-sm" role="status"></div>
+                                        <span class="text-success ms-2 small">Hesaplanıyor...</span>
+                                    }
+                                    else if (calculatedPriceInfo != null)
+                                    {
+                                        <div class="small text-muted mb-1">TOPLAM TUTAR (@calculatedPriceInfo.GeceSayisi Gece)</div>
+                                        <div class="fs-2 fw-bold text-success" style="line-height: 1;">
+                                            @calculatedPriceInfo.ToplamTutar.ToString("N2")
+                                            <span class="fs-5">@calculatedPriceInfo.ParaBirimiKodu</span>
+                                        </div>
+                                        <div class="small text-secondary mt-1">
+                                            (@GetGuestCountsFromList().Yetiskin Yetişkin, @GetGuestCountsFromList().Cocuk Çocuk)
+                                        </div>
+                                    }
+                                    else if (!string.IsNullOrEmpty(priceCalculationError))
+                                    {
+                                        <div class="text-danger small"><i class="bi bi-exclamation-circle"></i> @priceCalculationError</div>
+                                    }
+                                    else
+                                    {
+                                        <div class="text-muted small">Fiyatı görmek için tarih ve misafir girin.</div>
+                                    }
+                                    <InputNumber @bind-Value="currentReservation.ToplamFiyat" hidden />
+                                </div>
+                            </div>
+
+                            <div class="form-floating mb-3">
+                                <InputTextArea id="notes" class="form-control" style="height: 80px" @bind-Value="currentReservation.Aciklama" placeholder="Notunuz" />
+                                <label for="notes">Özel İstekler (Opsiyonel)</label>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 py-3 rounded-3 fw-bold shadow-sm"
+                                    disabled="@(isCalculatingPrice || calculatedPriceInfo == null)">
+                                <i class="bi bi-check-circle-fill me-2"></i> REZERVASYONU TAMAMLA
+                            </button>
+
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+ 
+    [SupplyParameterFromQuery] public DateTime? checkIn { get; set; }
+    [SupplyParameterFromQuery] public DateTime? checkOut { get; set; }
+    [SupplyParameterFromQuery] public int adults { get; set; } = 1;
+    [SupplyParameterFromQuery] public int children { get; set; } = 0;
+
+    private Hotel? hotel;
+    private Reservation currentReservation = new();
+
+    private PriceCalculationResult? calculatedPriceInfo;
+    private bool isCalculatingPrice = false;
+    private string? priceCalculationError;
+    private int? currentUserId;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+       
+        try
+        {
+            hotel = await Http.GetFromJsonAsync<Hotel>($"api/hotels/{Id}");
+        }
+        catch (Exception)
+        {
+          
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+      
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var userIdString = authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        if (userIdString != null && int.TryParse(userIdString, out int parsedId))
+        {
+            currentUserId = parsedId;
+        }
+
+ 
+        currentReservation.HotelId = Id;
+        currentReservation.GirisTarihi = checkIn ?? DateTime.Today;
+        currentReservation.CikisTarihi = checkOut ?? DateTime.Today.AddDays(1);
+
+       
+        int totalAdults = adults > 0 ? adults : 1;
+        int totalChildren = children >= 0 ? children : 0;
+
+        for (int i = 0; i < totalAdults; i++) AddGuest(isChild: false, preventCalc: true);
+        for (int i = 0; i < totalChildren; i++) AddGuest(isChild: true, preventCalc: true);
+
+      
+        await CalculatePriceAsync();
+    }
+
+    private int CalculateAge(DateTime dateOfBirth, DateTime referenceDate)
+    {
+        int age = referenceDate.Year - dateOfBirth.Year;
+        if (dateOfBirth.Date > referenceDate.Date.AddYears(-age)) age--;
+        return age;
+    }
+
+    private (int Yetiskin, int Cocuk) GetGuestCountsFromList()
+    {
+       
+        if (currentReservation.Guests == null || !currentReservation.Guests.Any()) return (0, 0);
+
+       
+        var yetiskinSayisi = currentReservation.Guests.Count(g => CalculateAge(g.DateOfBirth, currentReservation.GirisTarihi) >= 12);
+
+       
+        var cocukSayisi = currentReservation.Guests.Count(g => CalculateAge(g.DateOfBirth, currentReservation.GirisTarihi) < 12);
+
+        return (yetiskinSayisi, cocukSayisi);
+    }
+
+    private void AddGuest(bool isChild = false, bool preventCalc = false)
+    {
+        currentReservation.Guests.Add(new Guest
+        {
+            DateOfBirth = DateTime.Today.AddYears(isChild ? -10 : -30)
+        });
+        if (!preventCalc) _ = CalculatePriceAsync();
+    }
+
+    private void RemoveGuest(Guest guest)
+    {
+        currentReservation.Guests.Remove(guest);
+        _ = CalculatePriceAsync();
+    }
+
+    private async Task CalculatePriceAsync()
+    {
+        if (currentReservation.GirisTarihi >= currentReservation.CikisTarihi || !currentReservation.Guests.Any())
+        {
+            calculatedPriceInfo = null;
+            return;
+        }
+
+        isCalculatingPrice = true;
+        priceCalculationError = null;
+        StateHasChanged();
+
+        try
+        {
+            
+            var request = new
+            {
+                HotelId = Id,
+                CheckInDate = currentReservation.GirisTarihi,
+                CheckOutDate = currentReservation.CikisTarihi,
+                GuestBirthDates = currentReservation.Guests.Select(g => g.DateOfBirth).ToList()
+            };
+
+            var response = await Http.PostAsJsonAsync("api/prices/calculate", request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                calculatedPriceInfo = await response.Content.ReadFromJsonAsync<PriceCalculationResult>();
+                if (calculatedPriceInfo != null)
+                {
+                    currentReservation.ToplamFiyat = calculatedPriceInfo.ToplamTutar;
+                   
+                }
+            }
+            else
+            {
+                priceCalculationError = await response.Content.ReadAsStringAsync();
+                calculatedPriceInfo = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            priceCalculationError = "Fiyat hesaplanamadı.";
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            isCalculatingPrice = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleReservation()
+    {
+        if (currentUserId == null)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Lütfen önce giriş yapın.");
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        if (calculatedPriceInfo == null) return;
+
+       
+        currentReservation.UserId = currentUserId;
+        currentReservation.HotelId = Id;
+        currentReservation.ToplamFiyat = calculatedPriceInfo.ToplamTutar;
+        currentReservation.CurrencyCode = calculatedPriceInfo.ParaBirimiKodu;
+        
+
+        
+        foreach (var g in currentReservation.Guests) g.Id = 0;
+
+        var response = await Http.PostAsJsonAsync("api/reservations", currentReservation);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Rezervasyonunuz başarıyla alındı! Teşekkürler.");
+            NavigationManager.NavigateTo("/reservations"); 
+        }
+        else
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            await JSRuntime.InvokeVoidAsync("alert", $"Hata: {error}");
+        }
+    }
+}
